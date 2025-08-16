@@ -2,14 +2,24 @@ import React, { useEffect, useState } from "react";
 
 const Console = () => {
   const [services, setServices] = useState([]);
+  const token = localStorage.getItem("token");
 
-  // Fetch services from backend
   useEffect(() => {
-    fetch("http://localhost:8000/console")
-      .then((res) => res.json())
+    fetch("http://localhost:8000/console", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch services. Maybe unauthorized?");
+        }
+        return res.json();
+      })
       .then((data) => setServices(data))
       .catch((err) => console.error(err));
-  }, []);
+  }, [token]);
 
   return (
     <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
