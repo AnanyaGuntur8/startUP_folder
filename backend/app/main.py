@@ -5,6 +5,7 @@ from app.db.base import Base
 from app.routes import console
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import console
+from app.routes import playground
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
@@ -19,9 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(console.router, prefix="/console", tags=["console"])
-
-
 @app.get("/")
 def read_root():
     return {"message": "StartUP backend is running!"}
@@ -31,3 +29,4 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(startup.router, prefix="/startup", tags=["startup"])
 app.include_router(customer.router, prefix="/customers", tags=["customers"])
 app.include_router(console.router, prefix="/console", tags=["console"])
+app.include_router(playground.router, prefix="/playground", tags=["playground"])
