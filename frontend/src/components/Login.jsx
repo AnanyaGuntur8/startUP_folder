@@ -20,7 +20,7 @@ const Login = () => {
 
       const data = await res.json();
       localStorage.setItem("token", data.access_token); // store JWT
-      navigate("/dashboard");
+      navigate("/console");
     } catch (error) {
       alert("Invalid credentials");
     }

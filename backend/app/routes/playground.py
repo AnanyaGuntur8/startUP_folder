@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Dict
 from datetime import datetime
 
@@ -7,9 +7,15 @@ router = APIRouter(tags=["playground"])
 
 # ---- In-memory storage ----
 posts_db: List[dict] = []
+users_db: Dict[str, dict] = {}  # key: email
 followers_db: dict = {}
 
 # ---- Models ----
+class UserRegister(BaseModel):
+    email: EmailStr
+    name: str
+    password: str
+
 class Reply(BaseModel):
     author: str
     content: str
@@ -20,7 +26,7 @@ class Post(BaseModel):
     author: str
     content: str
     timestamp: datetime
-    likes: List[str] = []  # Track users who liked
+    likes: List[str] = []
     replies: List[Reply] = []
 
 class CreatePost(BaseModel):
@@ -32,6 +38,17 @@ class CreateReply(BaseModel):
     content: str
 
 # ---- Routes ----
+
+@router.post("/auth/register")
+def register_user(user: UserRegister):
+    if user.email in users_db:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    users_db[user.email] = {
+        "email": user.email,
+        "name": user.name,
+        "password": user.password  # NOTE: plain text for demo only (hash in prod)
+    }
+    return {"message": "User registered", "name": user.name, "email": user.email}
 
 @router.get("/feed", response_model=List[Post])
 def get_feed():
@@ -47,7 +64,7 @@ def create_post(post: CreatePost):
         "likes": [],
         "replies": []
     }
-    posts_db.append(new_post)
+    posts_db.insert(0, new_post)  # newest first
     return new_post
 
 @router.delete("/post/{post_id}")
@@ -91,9 +108,9 @@ def like_post(post_id: int, user: str):
     for post in posts_db:
         if post["id"] == post_id:
             if user in post["likes"]:
-                post["likes"].remove(user)  # Unlike
+                post["likes"].remove(user)
                 return {"message": "Unliked", "likes": len(post["likes"])}
             else:
-                post["likes"].append(user)  # Like
+                post["likes"].append(user)
                 return {"message": "Liked", "likes": len(post["likes"])}
     raise HTTPException(status_code=404, detail="Post not found")
