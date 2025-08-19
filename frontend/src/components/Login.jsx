@@ -8,25 +8,30 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  
+
     try {
       const res = await fetch("http://localhost:8000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       if (!res.ok) throw new Error("Login failed");
-  
+
       const data = await res.json();
-      localStorage.setItem("access_token", data.access_token); // fix key
-      localStorage.setItem("currentUser", JSON.stringify({ email })); // optional
+
+      // ✅ Save JWT
+      localStorage.setItem("access_token", data.access_token);
+
+      // ✅ Save full user object (so Playground can use `currentUser.name`)
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+
+      // Redirect to Playground or Console
       navigate("/console");
     } catch (error) {
       alert("Invalid credentials");
     }
   };
-  
 
   return (
     <div style={{ padding: "2rem" }}>

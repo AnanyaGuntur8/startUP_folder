@@ -191,7 +191,7 @@ const Playground = () => {
       <div style={styles.loginContainer}>
         <div style={styles.loginCard}>
           <h1 style={styles.loginTitle}>Playground</h1>
-          <p style={styles.loginSubtitle}>Please log in to access your feed</p>
+          <p style={styles.loginSubtitle}>Please log in to access your professional feed</p>
           <div style={styles.loginMessage}>
             <p><strong>Authentication Required</strong></p>
             <p>Please log in through your authentication system.</p>
@@ -213,7 +213,7 @@ const Playground = () => {
         <div style={styles.headerContent}>
           <h1 style={styles.headerTitle}>Playground</h1>
           <div style={styles.userInfo}>
-            <span style={styles.welcomeText}>Welcome, {currentUser.name}</span>
+            <span style={styles.welcomeText}>Welcome, {currentUser}</span>
             <button
               onClick={() => {
                 localStorage.removeItem('currentUser');
