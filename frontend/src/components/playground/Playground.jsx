@@ -1,822 +1,834 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect } from 'react';
+import { Heart, MessageCircle, Send, Trash2, User, Clock, Plus } from 'lucide-react';
 
 const Playground = () => {
-  const [view, setView] = useState("feed");
   const [posts, setPosts] = useState([]);
-  const [postText, setPostText] = useState("");
-  const [replyText, setReplyText] = useState("");
-  const [activeReplyPostId, setActiveReplyPostId] = useState(null);
-  const [collapsedReplies, setCollapsedReplies] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [currentUser, setCurrentUser] = useState('');
+  const [newPost, setNewPost] = useState('');
+  const [replyContent, setReplyContent] = useState({});
 
-  // Mock professional posts data
-  const mockPosts = [
-    {
-      id: "post-1",
-      author: "Sarah Chen",
-      role: "Senior Frontend Developer",
-      avatar: "SC",
-      content: "Just shipped a new feature that reduces load time by 40%! The key was implementing lazy loading with intersection observers. Here's what we learned in the process...",
-      timestamp: "2 hours ago",
-      likes: ["user1", "user2", "user3"],
-      replies: [
-        {
-          author: "Alex Rivera",
-          role: "Full Stack Developer",
-          content: "Great work Sarah! Could you share more details about the intersection observer implementation? We're facing similar performance issues.",
-          timestamp: "1 hour ago",
-          likes: ["user1"],
-          replyingTo: "Sarah Chen"
-        }
-      ],
-      views: 1247,
-      shares: 12
-    },
-    {
-      id: "post-2", 
-      author: "Marcus Johnson",
-      role: "Product Manager",
-      avatar: "MJ",
-      content: "Attending React Conf next week. Anyone else going? Would love to connect and discuss the latest trends in web development and product strategy.",
-      timestamp: "4 hours ago",
-      likes: ["user1", "user4"],
-      replies: [],
-      views: 892,
-      shares: 8
-    }
-  ];
+  // Mock API base URL - in real implementation, this would be your FastAPI server
+  const API_BASE = 'http://localhost:8000/playground';
 
-  // Initialize with mock data
+  // Load user from localStorage and posts from API on component mount
   useEffect(() => {
-    const storedPosts = localStorage.getItem("posts");
-    if (storedPosts) {
-      setPosts(JSON.parse(storedPosts));
+    // Check for JWT token first
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      try {
+        // Decode JWT token to get user info (basic decode, not verifying signature)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // The token contains 'sub' field with email, but we need the name
+        // So we'll need to get user data from your backend or store it separately
+        
+        // Option 1: If you stored user data separately
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setCurrentUser(user.name || user.email || payload.sub);
+        } else {
+          // Option 2: Use email from token as fallback
+          setCurrentUser(payload.sub);
+        }
+      } catch (error) {
+        console.error('Error decoding token:', error);
+        // Clear invalid token
+        localStorage.removeItem('access_token');
+      }
     } else {
-      setPosts(mockPosts);
+      // Fallback: Check for direct user data (for testing)
+      const userData = localStorage.getItem('currentUser');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          setCurrentUser(user.name || user.email || userData);
+        } catch (error) {
+          setCurrentUser(userData);
+        }
+      }
     }
+    
+    loadPosts();
   }, []);
-  
-  useEffect(() => {
-    if (posts.length > 0) {
-      localStorage.setItem("posts", JSON.stringify(posts));
-    }
-  }, [posts]);  
 
-  const handlePost = useCallback(() => {
-    if (!postText.trim()) return;
-    
-    setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      const newPost = {
-        id: `post-${Date.now()}`,
-        author: "You",
-        role: "Professional",
-        avatar: "YU",
-        content: postText,
-        timestamp: "now",
-        likes: [],
-        replies: [],
-        views: 0,
-        shares: 0
-      };
+  const loadPosts = async () => {
+    try {
+      // In a real implementation, this would call your FastAPI endpoint
+      // const response = await fetch(`${API_BASE}/feed`);
+      // const data = await response.json();
+      // setPosts(data);
       
-      setPosts([newPost, ...posts]);
-      setPostText("");
-      setIsLoading(false);
-    }, 500);
-  }, [postText, posts]);
-
-  const handleLike = useCallback((postId) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === postId) {
-          const userLiked = p.likes?.includes("You");
-          return {
-            ...p,
-            likes: userLiked 
-              ? p.likes.filter(u => u !== "You")
-              : [...(p.likes || []), "You"]
-          };
-        }
-        return p;
-      })
-    );
-  }, []);
-
-  const handleReply = useCallback((postId) => {
-    if (!replyText.trim()) return;
-    
-    const newReply = {
-      author: "You", 
-      role: "Professional",
-      content: replyText, 
-      timestamp: "now", 
-      likes: []
-    };
-    
-    setPosts((prev) =>
-      prev.map((p) => (p.id === postId ? { ...p, replies: [...(p.replies || []), newReply] } : p))
-    );
-    setReplyText("");
-    setActiveReplyPostId(null);
-  }, [replyText]);
-
-  const handleLikeReply = useCallback((postId, replyIndex) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === postId) {
-          const replies = [...(p.replies || [])];
-          const reply = replies[replyIndex];
-          const userLiked = reply.likes?.includes("You");
-          reply.likes = userLiked ? reply.likes.filter((u) => u !== "You") : [...(reply.likes || []), "You"];
-          replies[replyIndex] = reply;
-          return { ...p, replies };
-        }
-        return p;
-      })
-    );
-  }, []);
-
-  const handleDeletePost = useCallback((postId) => {
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-  }, []);
-
-  const handleDeleteReply = useCallback((postId, replyIndex) => {
-    setPosts((prev) =>
-      prev.map((p) => {
-        if (p.id === postId) {
-          const replies = [...(p.replies || [])];
-          replies.splice(replyIndex, 1);
-          return { ...p, replies };
-        }
-        return p;
-      })
-    );
-  }, []);
-
-  const toggleReplies = useCallback((postId) => {
-    setCollapsedReplies((prev) => ({ ...prev, [postId]: !prev[postId] }));
-  }, []);
-
-  // Professional styling
-  const styles = {
-    container: { 
-      display: "flex", 
-      height: "100vh", 
-      backgroundColor: "#f8fafc", 
-      color: "#1e293b", 
-      fontFamily: "'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
-      fontSize: "14px"
-    },
-    
-    sidebar: { 
-      width: "280px", 
-      backgroundColor: "#ffffff", 
-      borderRight: "1px solid #e2e8f0", 
-      padding: "24px", 
-      display: "flex", 
-      flexDirection: "column",
-      boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)"
-    },
-    
-    sidebarHeader: {
-      marginBottom: "32px"
-    },
-    
-    sidebarTitle: { 
-      fontSize: "24px", 
-      fontWeight: "700", 
-      marginBottom: "8px", 
-      color: "#0f172a",
-      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent"
-    },
-    
-    sidebarSubtitle: {
-      fontSize: "14px",
-      color: "#64748b",
-      fontWeight: "400"
-    },
-    
-    navButton: (active) => ({ 
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      width: "100%", 
-      textAlign: "left", 
-      padding: "12px 16px", 
-      marginBottom: "4px", 
-      borderRadius: "12px", 
-      border: "none", 
-      fontSize: "15px", 
-      cursor: "pointer", 
-      backgroundColor: active ? "#3b82f6" : "transparent", 
-      color: active ? "#ffffff" : "#475569", 
-      fontWeight: active ? "600" : "500", 
-      transition: "all 0.2s ease",
-      boxShadow: active ? "0 4px 12px rgb(59 130 246 / 0.25)" : "none"
-    }),
-    
-    navIcon: {
-      width: "20px",
-      height: "20px",
-      fill: "currentColor"
-    },
-    
-    main: { 
-      flex: 1, 
-      padding: "24px 32px", 
-      overflowY: "auto",
-      maxWidth: "800px"
-    },
-    
-    header: { 
-      fontSize: "28px", 
-      fontWeight: "700", 
-      marginBottom: "8px", 
-      color: "#0f172a"
-    },
-    
-    headerSubtext: {
-      fontSize: "16px",
-      color: "#64748b",
-      marginBottom: "32px"
-    },
-    
-    card: { 
-      backgroundColor: "#ffffff", 
-      padding: "24px", 
-      borderRadius: "16px", 
-      marginBottom: "24px", 
-      boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
-      border: "1px solid #f1f5f9"
-    },
-    
-    avatar: (size = "40px") => ({
-      width: size,
-      height: size,
-      borderRadius: "50%",
-      backgroundColor: "#3b82f6",
-      color: "white",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontWeight: "600",
-      fontSize: size === "32px" ? "12px" : "14px",
-      background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
-      flexShrink: 0
-    }),
-    
-    postHeader: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: "12px",
-      marginBottom: "16px"
-    },
-    
-    postAuthorInfo: {
-      flex: 1
-    },
-    
-    postAuthor: {
-      fontSize: "16px",
-      fontWeight: "600",
-      color: "#0f172a",
-      marginBottom: "2px"
-    },
-    
-    postRole: {
-      fontSize: "13px",
-      color: "#64748b",
-      marginBottom: "4px"
-    },
-    
-    postTime: {
-      fontSize: "13px",
-      color: "#94a3b8"
-    },
-    
-    postContent: {
-      fontSize: "15px",
-      lineHeight: "1.6",
-      color: "#334155",
-      marginBottom: "16px"
-    },
-    
-    postMeta: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      fontSize: "13px",
-      color: "#64748b",
-      marginBottom: "16px",
-      paddingBottom: "16px",
-      borderBottom: "1px solid #f1f5f9"
-    },
-    
-    postActions: {
-      display: "flex",
-      alignItems: "center",
-      gap: "4px",
-      marginBottom: "16px"
-    },
-    
-    actionButton: (active = false, color = "#64748b") => ({
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      padding: "8px 12px",
-      borderRadius: "8px",
-      border: "none",
-      fontSize: "14px",
-      fontWeight: "500",
-      cursor: "pointer",
-      backgroundColor: active ? `${color}15` : "transparent",
-      color: active ? color : "#64748b",
-      transition: "all 0.2s ease"
-    }),
-    
-    postTextarea: { 
-      width: "100%",
-      minHeight: "120px", 
-      backgroundColor: "#f8fafc", 
-      color: "#1e293b", 
-      border: "2px solid #e2e8f0", 
-      borderRadius: "12px", 
-      padding: "16px", 
-      fontSize: "15px", 
-      resize: "vertical", 
-      marginBottom: "16px",
-      fontFamily: "inherit",
-      lineHeight: "1.5",
-      transition: "border-color 0.2s ease",
-      outline: "none"
-    },
-    
-    primaryButton: (disabled = false) => ({ 
-      backgroundColor: disabled ? "#94a3b8" : "#3b82f6", 
-      color: "#ffffff", 
-      padding: "12px 24px", 
-      border: "none", 
-      borderRadius: "8px", 
-      fontWeight: "600", 
-      fontSize: "14px",
-      cursor: disabled ? "not-allowed" : "pointer", 
-      transition: "all 0.2s ease",
-      boxShadow: disabled ? "none" : "0 1px 3px rgb(59 130 246 / 0.12), 0 1px 2px rgb(59 130 246 / 0.24)"
-    }),
-    
-    repliesContainer: { 
-      marginTop: "20px", 
-      paddingLeft: "20px", 
-      borderLeft: "3px solid #e2e8f0"
-    },
-    
-    replyCard: { 
-      backgroundColor: "#f8fafc", 
-      padding: "16px", 
-      borderRadius: "12px", 
-      marginBottom: "12px",
-      border: "1px solid #e2e8f0"
-    },
-    
-    replyHeader: {
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      marginBottom: "8px"
-    },
-    
-    replyAuthor: {
-      fontWeight: "600",
-      fontSize: "14px",
-      color: "#0f172a"
-    },
-    
-    replyRole: {
-      fontSize: "12px",
-      color: "#64748b"
-    },
-    
-    replyContent: {
-      fontSize: "14px",
-      lineHeight: "1.5",
-      color: "#334155",
-      marginBottom: "8px"
-    },
-    
-    replyActions: {
-      display: "flex",
-      gap: "12px",
-      fontSize: "12px"
-    },
-    
-    replyBox: { 
-      marginTop: "16px",
-      padding: "16px",
-      backgroundColor: "#f8fafc",
-      borderRadius: "12px",
-      border: "1px solid #e2e8f0"
-    },
-    
-    replyTextarea: {
-      width: "100%",
-      minHeight: "80px",
-      backgroundColor: "#ffffff",
-      color: "#1e293b",
-      border: "1px solid #d1d5db",
-      borderRadius: "8px",
-      padding: "12px",
-      fontSize: "14px",
-      resize: "vertical",
-      marginBottom: "12px",
-      fontFamily: "inherit",
-      outline: "none"
-    },
-    
-    buttonGroup: {
-      display: "flex",
-      justifyContent: "flex-end",
-      gap: "8px"
-    },
-    
-    secondaryButton: {
-      backgroundColor: "transparent",
-      color: "#64748b",
-      padding: "8px 16px",
-      border: "1px solid #d1d5db",
-      borderRadius: "6px",
-      fontSize: "14px",
-      cursor: "pointer",
-      transition: "all 0.2s ease"
-    },
-    
-    deleteButton: {
-      backgroundColor: "transparent",
-      color: "#dc2626",
-      border: "none",
-      padding: "6px",
-      borderRadius: "6px",
-      cursor: "pointer",
-      fontSize: "18px",
-      transition: "all 0.2s ease"
-    },
-    
-    emptyState: {
-      textAlign: "center",
-      padding: "48px 24px",
-      color: "#64748b"
-    },
-    
-    emptyStateIcon: {
-      fontSize: "48px",
-      marginBottom: "16px",
-      opacity: 0.5
-    },
-    
-    emptyStateTitle: {
-      fontSize: "18px",
-      fontWeight: "600",
-      marginBottom: "8px",
-      color: "#334155"
-    },
-    
-    charCounter: (count) => ({
-      fontSize: "12px",
-      color: count > 280 ? "#dc2626" : "#64748b",
-      textAlign: "right",
-      marginTop: "4px"
-    })
+      // For now, start with empty posts array
+      setPosts([]);
+    } catch (error) {
+      console.error('Failed to load posts:', error);
+    }
   };
 
-  const navItems = [
-    { id: "feed", label: "Home", icon: "🏠" },
-    { id: "trending", label: "Trending", icon: "📈" },
-    { id: "network", label: "Slide", icon: "👥" },
-    { id: "notifications", label: "Notifications", icon: "🔔" },
-    { id: "messages", label: "Messages", icon: "💬" },
-    { id: "library", label: "Library", icon: "📚" }
-  ];
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    if (!newPost.trim() || !currentUser) return;
+
+    const postData = {
+      author: currentUser,
+      content: newPost
+    };
+
+    try {
+      // Mock post creation=
+      // const response = await fetch(`${API_BASE}/post`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(postData)
+      // });
+      // const newPostObj = await response.json();
+      
+      const newPostObj = {
+        id: posts.length + 1,
+        author: currentUser,
+        content: newPost,
+        timestamp: new Date().toISOString(),
+        likes: [],
+        replies: []
+      };
+      
+      setPosts(prev => [newPostObj, ...prev]);
+      setNewPost('');
+    } catch (error) {
+      console.error('Failed to create post:', error);
+    }
+  };
+
+  const handleLike = async (postId) => {
+    if (!currentUser) return;
+
+    try {
+      // Mock like toggle - replace with actual API call
+      // await fetch(`${API_BASE}/like/${postId}`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ user: currentUser })
+      // });
+
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          const isLiked = post.likes.includes(currentUser);
+          return {
+            ...post,
+            likes: isLiked 
+              ? post.likes.filter(user => user !== currentUser)
+              : [...post.likes, currentUser]
+          };
+        }
+        return post;
+      }));
+    } catch (error) {
+      console.error('Failed to like post:', error);
+    }
+  };
+
+  const handleReply = async (postId) => {
+    const content = replyContent[postId];
+    if (!content?.trim() || !currentUser) return;
+
+    try {
+      // Mock reply creation - replace with actual API call
+      // const response = await fetch(`${API_BASE}/reply/${postId}`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ author: currentUser, content: content })
+      // });
+      // const newReply = await response.json();
+
+      const newReply = {
+        author: currentUser,
+        content: content,
+        timestamp: new Date().toISOString()
+      };
+
+      setPosts(prev => prev.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            replies: [...post.replies, newReply]
+          };
+        }
+        return post;
+      }));
+
+      setReplyContent(prev => ({ ...prev, [postId]: '' }));
+    } catch (error) {
+      console.error('Failed to add reply:', error);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      // Mock delete - replace with actual API call
+      // await fetch(`${API_BASE}/post/${postId}?user=${encodeURIComponent(currentUser)}`, {
+      //   method: 'DELETE'
+      // });
+
+      setPosts(prev => prev.filter(post => post.id !== postId));
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+    }
+  };
+
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24 * 7) return `${Math.floor(diffInHours / 24)}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  if (!currentUser) {
+    return (
+      <div style={styles.loginContainer}>
+        <div style={styles.loginCard}>
+          <h1 style={styles.loginTitle}>Playground</h1>
+          <p style={styles.loginSubtitle}>Please log in to access your feed</p>
+          <div style={styles.loginMessage}>
+            <p><strong>Authentication Required</strong></p>
+            <p>Please log in through your authentication system.</p>
+            <p style={{ marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
+              Your login should store either:
+              <br />• JWT token in 'access_token'
+              <br />• User data in 'currentUser'
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
-      {/* Professional Sidebar */}
-      <aside style={styles.sidebar}>
-        <div style={styles.sidebarHeader}>
-          <h1 style={styles.sidebarTitle}>Playground</h1>
-          <p style={styles.sidebarSubtitle}>Connect. Share. Grow.</p>
-        </div>
-        
-        <nav>
-          {navItems.map((item) => (
-            <button 
-              key={item.id} 
-              style={styles.navButton(view === item.id)} 
-              onClick={() => setView(item.id)}
-              onMouseEnter={(e) => {
-                if (view !== item.id) {
-                  e.target.style.backgroundColor = "#f1f5f9";
-                }
+      {/* Header */}
+      <header style={styles.header}>
+        <div style={styles.headerContent}>
+          <h1 style={styles.headerTitle}>Playground</h1>
+          <div style={styles.userInfo}>
+            <span style={styles.welcomeText}>Welcome, {currentUser.name}</span>
+            <button
+              onClick={() => {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('access_token'); // Clear JWT token too
+                setCurrentUser('');
               }}
-              onMouseLeave={(e) => {
-                if (view !== item.id) {
-                  e.target.style.backgroundColor = "transparent";
-                }
-              }}
+              style={styles.logoutButton}
             >
-              <span style={styles.navIcon}>{item.icon}</span>
-              {item.label}
+              Logout
             </button>
-          ))}
-        </nav>
-
-        {/* User Profile Section */}
-        <div style={{marginTop: "auto", paddingTop: "24px", borderTop: "1px solid #e2e8f0"}}>
-          <div style={{display: "flex", alignItems: "center", gap: "12px"}}>
-            <div style={styles.avatar("44px")}>YU</div>
-            <div style={{flex: 1}}>
-              <div style={{fontSize: "14px", fontWeight: "600", color: "#0f172a"}}>Your Name</div>
-              <div style={{fontSize: "12px", color: "#64748b"}}>@yourhandle</div>
-            </div>
-            <button style={{background: "none", border: "none", fontSize: "18px", cursor: "pointer"}}>⚙️</button>
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content */}
       <main style={styles.main}>
-        {view === "feed" && (
-          <>
-            <div>
-              <h1 style={styles.header}>Professional Feed</h1>
-              <p style={styles.headerSubtext}>Stay connected with your professional network and industry insights</p>
-            </div>
-
-            {/* Enhanced Post Creation */}
-            <div style={styles.card}>
-              <div style={{display: "flex", gap: "16px", alignItems: "flex-start"}}>
-                <div style={styles.avatar()}>YU</div>
-                <div style={{flex: 1}}>
-                  <textarea
-                    value={postText}
-                    onChange={(e) => setPostText(e.target.value)}
-                    placeholder="Share your professional insights, achievements, or ask questions to engage with your network..."
-                    style={{
-                      ...styles.postTextarea,
-                      borderColor: postText.length > 0 ? "#3b82f6" : "#e2e8f0"
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = "#3b82f6"}
-                    onBlur={(e) => e.target.style.borderColor = postText.length > 0 ? "#3b82f6" : "#e2e8f0"}
-                  />
-                  <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
-                    <div style={styles.charCounter(postText.length)}>
-                      {postText.length}/280 characters
-                    </div>
-                    <button 
-                      onClick={handlePost} 
-                      disabled={!postText.trim() || isLoading}
-                      style={styles.primaryButton(!postText.trim() || isLoading)}
-                      onMouseEnter={(e) => {
-                        if (!(!postText.trim() || isLoading)) {
-                          e.target.style.backgroundColor = "#2563eb";
-                          e.target.style.transform = "translateY(-1px)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!(!postText.trim() || isLoading)) {
-                          e.target.style.backgroundColor = "#3b82f6";
-                          e.target.style.transform = "translateY(0)";
-                        }
-                      }}
-                    >
-                      {isLoading ? "🔄 Posting..." : "📤 Share Post"}
-                    </button>
+        {/* Create Post */}
+        <div style={styles.createPostCard}>
+          <form onSubmit={handleCreatePost}>
+            <div style={styles.createPostContent}>
+              <div style={styles.userAvatar}>
+                <User size={20} />
+              </div>
+              <div style={styles.createPostInput}>
+                <textarea
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder="Share your insights..."
+                  style={styles.textarea}
+                  rows="3"
+                />
+                <div style={styles.createPostFooter}>
+                  <div style={styles.characterCount}>
+                    {newPost.length}/500 characters
                   </div>
+                  <button
+                    type="submit"
+                    disabled={!newPost.trim()}
+                    style={{
+                      ...styles.postButton,
+                      ...(newPost.trim() ? {} : styles.postButtonDisabled)
+                    }}
+                  >
+                    <Plus size={16} style={styles.buttonIcon} />
+                    Post
+                  </button>
                 </div>
               </div>
             </div>
+          </form>
+        </div>
 
-            {/* Enhanced Feed */}
-            {posts.length === 0 ? (
-              <div style={styles.emptyState}>
-                <div style={styles.emptyStateIcon}>💼</div>
-                <h3 style={styles.emptyStateTitle}>Welcome to your Professional Feed</h3>
-                <p>Start sharing your professional journey and connect with industry peers!</p>
-              </div>
-            ) : (
-              posts.map((post) => {
-                const userLiked = post.likes?.includes("You");
-                const repliesCollapsed = collapsedReplies[post.id];
-                
-                return (
-                  <div key={post.id} style={styles.card}>
-                    {/* Enhanced Post Header */}
-                    <div style={styles.postHeader}>
-                      <div style={styles.avatar()}>{post.avatar}</div>
-                      <div style={styles.postAuthorInfo}>
-                        <div style={styles.postAuthor}>{post.author}</div>
-                        <div style={styles.postRole}>{post.role}</div>
-                        <div style={styles.postTime}>{post.timestamp}</div>
+        {/* Posts Feed */}
+        <div style={styles.feed}>
+          {posts.length === 0 ? (
+            <div style={styles.emptyState}>
+              <MessageCircle size={48} style={styles.emptyIcon} />
+              <p style={styles.emptyTitle}>No posts yet</p>
+              <p style={styles.emptySubtitle}>Be the first to share something with your network!</p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <div key={post.id} style={styles.postCard}>
+                {/* Post Header */}
+                <div style={styles.postHeader}>
+                  <div style={styles.postAuthorInfo}>
+                    <div style={styles.postAvatar}>
+                      <User size={20} />
+                    </div>
+                    <div style={styles.postAuthorDetails}>
+                      <h3 style={styles.authorName}>{post.author}</h3>
+                      <div style={styles.postTimestamp}>
+                        <Clock size={14} style={styles.timestampIcon} />
+                        {formatTimestamp(post.timestamp)}
                       </div>
-                      {post.author === "You" && (
-                        <button 
-                          style={styles.deleteButton} 
-                          onClick={() => handleDeletePost(post.id)}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = "#fee2e2"}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
-                          title="Delete post"
-                        >
-                          🗑️
-                        </button>
-                      )}
                     </div>
+                  </div>
+                  {post.author === currentUser && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      style={styles.deleteButton}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  )}
+                </div>
 
-                    {/* Post Content */}
-                    <div style={styles.postContent}>{post.content}</div>
+                {/* Post Content */}
+                <div style={styles.postContent}>
+                  <p style={styles.postText}>{post.content}</p>
+                </div>
 
-                    {/* Post Metrics */}
-                    <div style={styles.postMeta}>
-                      <span>{post.views?.toLocaleString() || 0} views</span>
-                      <span>{post.shares || 0} shares</span>
-                    </div>
+                {/* Post Actions */}
+                <div style={styles.postActions}>
+                  <button
+                    onClick={() => handleLike(post.id)}
+                    style={{
+                      ...styles.actionButton,
+                      color: post.likes.includes(currentUser) ? '#ef4444' : '#6b7280'
+                    }}
+                  >
+                    <Heart
+                      size={18}
+                      fill={post.likes.includes(currentUser) ? 'currentColor' : 'none'}
+                      style={styles.actionIcon}
+                    />
+                    {post.likes.length} likes
+                  </button>
+                  <button style={styles.actionButton}>
+                    <MessageCircle size={18} style={styles.actionIcon} />
+                    {post.replies.length} replies
+                  </button>
+                </div>
 
-                    {/* Enhanced Post Actions */}
-                    <div style={styles.postActions}>
-                      <button 
-                        style={styles.actionButton(userLiked, "#dc2626")} 
-                        onClick={() => handleLike(post.id)}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = userLiked ? "#dc262615" : "#fee2e2";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = userLiked ? "#dc262615" : "transparent";
-                        }}
-                      >
-                        {userLiked ? "💖" : "🤍"} {post.likes?.length || 0}
-                      </button>
-                      
-                      <button 
-                        style={styles.actionButton(activeReplyPostId === post.id, "#3b82f6")} 
-                        onClick={() => setActiveReplyPostId(activeReplyPostId === post.id ? null : post.id)}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#dbeafe";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = activeReplyPostId === post.id ? "#3b82f615" : "transparent";
-                        }}
-                      >
-                        💬 {post.replies?.length || 0}
-                      </button>
-                      
-                      <button 
-                        style={styles.actionButton(false, "#059669")}
-                        onMouseEnter={(e) => {
-                          e.target.style.backgroundColor = "#d1fae5";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.backgroundColor = "transparent";
-                        }}
-                      >
-                        🔄 {post.shares || 0}
-                      </button>
-
-                      {post.replies?.length > 0 && (
-                        <button 
-                          style={{...styles.actionButton(), marginLeft: "auto"}} 
-                          onClick={() => toggleReplies(post.id)}
-                          onMouseEnter={(e) => {
-                            e.target.style.backgroundColor = "#f1f5f9";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.backgroundColor = "transparent";
-                          }}
-                        >
-                          {repliesCollapsed ? "👁️ Show" : "🙈 Hide"} replies
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Enhanced Reply Box */}
-                    {activeReplyPostId === post.id && (
-                      <div style={styles.replyBox}>
-                        <div style={{display: "flex", gap: "12px", alignItems: "flex-start"}}>
-                          <div style={styles.avatar("32px")}>YU</div>
-                          <div style={{flex: 1}}>
-                            <textarea 
-                              value={replyText} 
-                              onChange={(e) => setReplyText(e.target.value)} 
-                              placeholder="Share your professional thoughts or insights..." 
-                              style={styles.replyTextarea}
-                            />
-                            <div style={styles.buttonGroup}>
-                              <button 
-                                onClick={() => setActiveReplyPostId(null)}
-                                style={styles.secondaryButton}
-                                onMouseEnter={(e) => {
-                                  e.target.style.backgroundColor = "#f1f5f9";
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.target.style.backgroundColor = "transparent";
-                                }}
-                              >
-                                Cancel
-                              </button>
-                              <button 
-                                onClick={() => handleReply(post.id)}
-                                disabled={!replyText.trim()}
-                                style={styles.primaryButton(!replyText.trim())}
-                                onMouseEnter={(e) => {
-                                  if (replyText.trim()) {
-                                    e.target.style.backgroundColor = "#2563eb";
-                                  }
-                                }}
-                                onMouseLeave={(e) => {
-                                  if (replyText.trim()) {
-                                    e.target.style.backgroundColor = "#3b82f6";
-                                  }
-                                }}
-                              >
-                                💬 Reply
-                              </button>
+                {/* Replies Section */}
+                {post.replies.length > 0 && (
+                  <div style={styles.repliesSection}>
+                    {post.replies.map((reply, index) => (
+                      <div key={index} style={styles.replyItem}>
+                        <div style={styles.replyContent}>
+                          <div style={styles.replyAuthorInfo}>
+                            <div style={styles.replyAvatar}>
+                              <User size={16} />
+                            </div>
+                            <div style={styles.replyDetails}>
+                              <h4 style={styles.replyAuthorName}>{reply.author}</h4>
+                              <p style={styles.replyText}>{reply.content}</p>
+                              <div style={styles.replyTimestamp}>
+                                <Clock size={12} style={styles.replyTimestampIcon} />
+                                {formatTimestamp(reply.timestamp)}
+                              </div>
                             </div>
                           </div>
+                          {reply.author === currentUser && (
+                            <button
+                              onClick={() => {
+                                setPosts(prev => prev.map(p => {
+                                  if (p.id === post.id) {
+                                    return {
+                                      ...p,
+                                      replies: p.replies.filter((_, i) => i !== index)
+                                    };
+                                  }
+                                  return p;
+                                }));
+                              }}
+                              style={styles.replyDeleteButton}
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </div>
-                    )}
-
-                    {/* Enhanced Replies */}
-                    {post.replies?.length > 0 && !repliesCollapsed && (
-                      <div style={styles.repliesContainer}>
-                        {post.replies.map((reply, index) => {
-                          const userLikedReply = reply.likes?.includes("You");
-                          
-                          return (
-                            <div key={index} style={styles.replyCard}>
-                              <div style={styles.replyHeader}>
-                                <div style={styles.avatar("28px")}>{reply.author.charAt(0).toUpperCase()}</div>
-                                <div>
-                                  <span style={styles.replyAuthor}>{reply.author}</span>
-                                  <span style={{...styles.replyRole, marginLeft: "8px"}}>{reply.role}</span>
-                                  {reply.replyingTo && (
-                                    <span style={{fontSize: "12px", color: "#64748b", marginLeft: "8px"}}>
-                                      → {reply.replyingTo}
-                                    </span>
-                                  )}
-                                </div>
-                                {reply.author === "You" && (
-                                  <button 
-                                    style={{...styles.deleteButton, fontSize: "14px", marginLeft: "auto"}} 
-                                    onClick={() => handleDeleteReply(post.id, index)}
-                                  >
-                                    🗑️
-                                  </button>
-                                )}
-                              </div>
-                              
-                              <div style={styles.replyContent}>{reply.content}</div>
-                              
-                              <div style={styles.replyActions}>
-                                <button 
-                                  style={{
-                                    background: "none",
-                                    border: "none",
-                                    color: userLikedReply ? "#dc2626" : "#64748b",
-                                    cursor: "pointer",
-                                    fontSize: "12px"
-                                  }}
-                                  onClick={() => handleLikeReply(post.id, index)}
-                                >
-                                  {userLikedReply ? "💖" : "🤍"} {reply.likes?.length || 0}
-                                </button>
-                                <span style={{fontSize: "12px", color: "#94a3b8"}}>{reply.timestamp}</span>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                );
-              })
-            )}
-          </>
-        )}
+                )}
 
-        {/* Other Views */}
-        {view !== "feed" && (
-          <div style={styles.emptyState}>
-            <div style={styles.emptyStateIcon}>🚧</div>
-            <h3 style={styles.emptyStateTitle}>{view.charAt(0).toUpperCase() + view.slice(1)} Coming Soon</h3>
-            <p>This professional feature is currently under development. Stay tuned for updates!</p>
-          </div>
-        )}
+                {/* Add Reply */}
+                <div style={styles.addReplySection}>
+                  <div style={styles.addReplyContent}>
+                    <div style={styles.replyInputAvatar}>
+                      <User size={16} />
+                    </div>
+                    <div style={styles.replyInputContainer}>
+                      <input
+                        type="text"
+                        placeholder="Write a reply..."
+                        value={replyContent[post.id] || ''}
+                        onChange={(e) =>
+                          setReplyContent(prev => ({ ...prev, [post.id]: e.target.value }))
+                        }
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleReply(post.id);
+                          }
+                        }}
+                        style={styles.replyInput}
+                      />
+                      <button
+                        onClick={() => handleReply(post.id)}
+                        disabled={!replyContent[post.id]?.trim()}
+                        style={{
+                          ...styles.replyButton,
+                          ...(replyContent[post.id]?.trim() ? {} : styles.replyButtonDisabled)
+                        }}
+                      >
+                        <Send size={14} style={styles.buttonIcon} />
+                        Reply
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </main>
     </div>
   );
+};
+
+// Styles object
+const styles = {
+  container: {
+    minHeight: '100vh',
+    backgroundColor: '#f9fafb',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
+  },
+  
+  loginContainer: {
+    minHeight: '100vh',
+    backgroundColor: '#f9fafb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '16px'
+  },
+  
+  loginCard: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    padding: '32px',
+    width: '100%',
+    maxWidth: '400px',
+    textAlign: 'center'
+  },
+  
+  loginTitle: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: '16px'
+  },
+  
+  loginSubtitle: {
+    color: '#6b7280',
+    marginBottom: '24px'
+  },
+  
+  loginMessage: {
+    backgroundColor: '#fef3c7',
+    border: '1px solid #f59e0b',
+    borderRadius: '6px',
+    padding: '16px',
+    color: '#92400e'
+  },
+  
+  header: {
+    backgroundColor: 'white',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+    borderBottom: '1px solid #e5e7eb'
+  },
+  
+  headerContent: {
+    maxWidth: '768px',
+    margin: '0 auto',
+    padding: '16px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  
+  headerTitle: {
+    fontSize: '24px',
+    fontWeight: 'bold',
+    color: '#2563eb'
+  },
+  
+  userInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px'
+  },
+  
+  welcomeText: {
+    color: '#374151'
+  },
+  
+  logoutButton: {
+    fontSize: '14px',
+    color: '#6b7280',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px 8px'
+  },
+  
+  main: {
+    maxWidth: '768px',
+    margin: '0 auto',
+    padding: '32px 16px'
+  },
+  
+  createPostCard: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+    padding: '24px',
+    marginBottom: '24px'
+  },
+  
+  createPostContent: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '16px'
+  },
+  
+  userAvatar: {
+    backgroundColor: '#dbeafe',
+    borderRadius: '50%',
+    padding: '8px',
+    color: '#2563eb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  
+  createPostInput: {
+    flex: '1'
+  },
+  
+  textarea: {
+    width: '100%',
+    padding: '12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    resize: 'none',
+    fontSize: '16px',
+    fontFamily: 'inherit',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  
+  createPostFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: '12px'
+  },
+  
+  characterCount: {
+    fontSize: '14px',
+    color: '#6b7280'
+  },
+  
+  postButton: {
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 24px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    fontSize: '16px'
+  },
+  
+  postButtonDisabled: {
+    backgroundColor: '#d1d5db',
+    cursor: 'not-allowed'
+  },
+  
+  buttonIcon: {
+    flexShrink: 0
+  },
+  
+  feed: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px'
+  },
+  
+  emptyState: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+    padding: '32px',
+    textAlign: 'center',
+    color: '#6b7280'
+  },
+  
+  emptyIcon: {
+    margin: '0 auto 16px',
+    color: '#d1d5db'
+  },
+  
+  emptyTitle: {
+    fontSize: '18px',
+    marginBottom: '8px'
+  },
+  
+  emptySubtitle: {
+    fontSize: '14px'
+  },
+  
+  postCard: {
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+  },
+  
+  postHeader: {
+    padding: '24px 24px 16px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between'
+  },
+  
+  postAuthorInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  },
+  
+  postAvatar: {
+    backgroundColor: '#dbeafe',
+    borderRadius: '50%',
+    padding: '8px',
+    color: '#2563eb',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  
+  postAuthorDetails: {},
+  
+  authorName: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: '#111827',
+    margin: 0
+  },
+  
+  postTimestamp: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '14px',
+    color: '#6b7280',
+    marginTop: '4px'
+  },
+  
+  timestampIcon: {
+    flexShrink: 0
+  },
+  
+  deleteButton: {
+    color: '#6b7280',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px'
+  },
+  
+  postContent: {
+    padding: '0 24px 16px'
+  },
+  
+  postText: {
+    color: '#374151',
+    lineHeight: '1.6',
+    margin: 0
+  },
+  
+  postActions: {
+    padding: '16px 24px',
+    borderTop: '1px solid #f3f4f6',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '24px'
+  },
+  
+  actionButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '14px',
+    color: '#6b7280',
+    padding: '4px'
+  },
+  
+  actionIcon: {
+    flexShrink: 0
+  },
+  
+  repliesSection: {
+    borderTop: '1px solid #f3f4f6'
+  },
+  
+  replyItem: {
+    padding: '16px 16px 16px 48px',
+    borderBottom: '1px solid #f9fafb'
+  },
+  
+  replyContent: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between'
+  },
+  
+  replyAuthorInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flex: 1
+  },
+  
+  replyAvatar: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: '50%',
+    padding: '4px',
+    color: '#6b7280',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  
+  replyDetails: {
+    flex: 1
+  },
+  
+  replyAuthorName: {
+    fontSize: '14px',
+    fontWeight: '500',
+    color: '#111827',
+    margin: 0
+  },
+  
+  replyText: {
+    color: '#374151',
+    fontSize: '14px',
+    margin: '4px 0',
+    lineHeight: '1.5'
+  },
+  
+  replyTimestamp: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    fontSize: '12px',
+    color: '#6b7280'
+  },
+  
+  replyTimestampIcon: {
+    flexShrink: 0
+  },
+  
+  replyDeleteButton: {
+    color: '#6b7280',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '4px'
+  },
+  
+  addReplySection: {
+    padding: '16px 16px 16px 48px',
+    borderTop: '1px solid #f3f4f6',
+    backgroundColor: '#f9fafb'
+  },
+  
+  addReplyContent: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '12px'
+  },
+  
+  replyInputAvatar: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: '50%',
+    padding: '4px',
+    color: '#6b7280',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: '4px'
+  },
+  
+  replyInputContainer: {
+    flex: 1
+  },
+  
+  replyInput: {
+    width: '100%',
+    padding: '12px',
+    border: '1px solid #d1d5db',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    outline: 'none',
+    boxSizing: 'border-box'
+  },
+  
+  replyButton: {
+    marginTop: '8px',
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '4px 16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    cursor: 'pointer',
+    fontSize: '14px'
+  },
+  
+  replyButtonDisabled: {
+    backgroundColor: '#d1d5db',
+    cursor: 'not-allowed'
+  }
 };
 
 export default Playground;
