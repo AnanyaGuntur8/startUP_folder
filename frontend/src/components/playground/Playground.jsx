@@ -3,48 +3,56 @@ import { Heart, MessageCircle, Send, Trash2, User, Clock, Plus } from 'lucide-re
 
 const Playground = () => {
   const [posts, setPosts] = useState([]);
-  const [currentUser, setCurrentUser] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const [newPost, setNewPost] = useState('');
   const [replyContent, setReplyContent] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  // Mock API base URL - in real implementation, this would be your FastAPI server
   const API_BASE = 'http://localhost:8000/playground';
 
-  // Load user from localStorage and posts from API on component mount
   useEffect(() => {
-    // Check for JWT token first
     const token = localStorage.getItem('access_token');
-    if (token) {
+    const userData = localStorage.getItem('currentUser');
+    
+    if (userData) {
       try {
-        // Decode JWT token to get user info (basic decode, not verifying signature)
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        // The token contains 'sub' field with email, but we need the name
-        // So we'll need to get user data from your backend or store it separately
-        
-        // Option 1: If you stored user data separately
-        const userData = localStorage.getItem('currentUser');
-        if (userData) {
-          const user = JSON.parse(userData);
-          setCurrentUser(user.name || user.email || payload.sub);
-        } else {
-          // Option 2: Use email from token as fallback
-          setCurrentUser(payload.sub);
+        const user = JSON.parse(userData);
+        // Ensure user has an ID
+        if (!user.id) {
+          console.error('User object missing ID:', user);
+          setError('User ID is missing. Please log in again.');
+          return;
         }
+        setCurrentUser(user);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('currentUser');
+        setError('Invalid user data. Please log in again.');
+        return;
+      }
+    } else if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        // Make sure we have a valid user_id from the token
+        if (!payload.user_id) {
+          console.error('Token missing user_id:', payload);
+          setError('Invalid token. Please log in again.');
+          localStorage.removeItem('access_token');
+          return;
+        }
+        const user = {
+          id: payload.user_id,
+          name: payload.name || payload.sub,
+          email: payload.sub
+        };
+        setCurrentUser(user);
+        localStorage.setItem('currentUser', JSON.stringify(user));
       } catch (error) {
         console.error('Error decoding token:', error);
-        // Clear invalid token
         localStorage.removeItem('access_token');
-      }
-    } else {
-      // Fallback: Check for direct user data (for testing)
-      const userData = localStorage.getItem('currentUser');
-      if (userData) {
-        try {
-          const user = JSON.parse(userData);
-          setCurrentUser(user.name || user.email || userData);
-        } catch (error) {
-          setCurrentUser(userData);
-        }
+        setError('Invalid token. Please log in again.');
+        return;
       }
     }
     
@@ -53,73 +61,96 @@ const Playground = () => {
 
   const loadPosts = async () => {
     try {
+      console.log('Fetching posts from:', `${API_BASE}/feed`);
       const response = await fetch(`${API_BASE}/feed`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
-      setPosts(data);
+      console.log('Posts loaded successfully:', data);
+      
+      // Sort posts by timestamp (newest first)
+      const sortedPosts = data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setPosts(sortedPosts);
+      setError(''); // Clear any previous errors
     } catch (error) {
       console.error('Failed to load posts:', error);
-      // Fallback to empty array if API call fails
+      setError(`Failed to load posts: ${error.message}`);
       setPosts([]);
     }
   };
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
-    if (!newPost.trim() || !currentUser) return;
+    
+    if (!newPost.trim()) {
+      setError('Post content cannot be empty');
+      return;
+    }
+    
+    if (!currentUser?.id) {
+      setError('User ID is missing. Please refresh and log in again.');
+      return;
+    }
 
-    const postData = {
-      author: currentUser,
-      content: newPost
-    };
+    setLoading(true);
+    setError('');
 
     try {
-      // Mock post creation=
-      // const response = await fetch(`${API_BASE}/post`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(postData)
-      // });
-      // const newPostObj = await response.json();
+      console.log('Creating post with payload:', {
+        user_id: currentUser.id,
+        content: newPost.trim()
+      });
+
+      const response = await fetch(`${API_BASE}/post`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          user_id: currentUser.id,
+          content: newPost.trim()
+        })
+      });
+
+      console.log('Create post response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(`Server error: ${response.status} - ${errorText}`);
+      }
+
+      const savedPost = await response.json();
+      console.log('Post created successfully:', savedPost);
       
-      const newPostObj = {
-        id: posts.length + 1,
-        author: currentUser,
-        content: newPost,
-        timestamp: new Date().toISOString(),
-        likes: [],
-        replies: []
-      };
-      
-      setPosts(prev => [newPostObj, ...prev]);
+      // Add the new post to the top of the list
+      setPosts(prev => [savedPost, ...prev]);
       setNewPost('');
     } catch (error) {
       console.error('Failed to create post:', error);
+      setError(`Failed to create post: ${error.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLike = async (postId) => {
-    if (!currentUser) return;
-
+    if (!currentUser?.id) return;
+    
     try {
-      // Mock like toggle - replace with actual API call
-      // await fetch(`${API_BASE}/like/${postId}`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ user: currentUser })
-      // });
-
-      setPosts(prev => prev.map(post => {
-        if (post.id === postId) {
-          const isLiked = post.likes.includes(currentUser);
-          return {
-            ...post,
-            likes: isLiked 
-              ? post.likes.filter(user => user !== currentUser)
-              : [...post.likes, currentUser]
-          };
-        }
-        return post;
-      }));
+      const response = await fetch(`${API_BASE}/like/post/${postId}?user_id=${currentUser.id}`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        // Reload posts to get updated likes
+        loadPosts();
+      } else {
+        console.error('Failed to like post, status:', response.status);
+      }
     } catch (error) {
       console.error('Failed to like post:', error);
     }
@@ -127,28 +158,29 @@ const Playground = () => {
 
   const handleReply = async (postId) => {
     const content = replyContent[postId];
-    if (!content?.trim() || !currentUser) return;
+    if (!content?.trim() || !currentUser?.id) return;
 
     try {
-      // Mock reply creation - replace with actual API call
-      // const response = await fetch(`${API_BASE}/reply/${postId}`, {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ author: currentUser, content: content })
-      // });
-      // const newReply = await response.json();
-
-      const newReply = {
-        author: currentUser,
-        content: content,
-        timestamp: new Date().toISOString()
-      };
+      const response = await fetch(`${API_BASE}/reply/${postId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: currentUser.id, 
+          content: content.trim() 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const newReply = await response.json();
 
       setPosts(prev => prev.map(post => {
         if (post.id === postId) {
           return {
             ...post,
-            replies: [...post.replies, newReply]
+            replies: [...(post.replies || []), newReply]
           };
         }
         return post;
@@ -161,23 +193,55 @@ const Playground = () => {
   };
 
   const handleDeletePost = async (postId) => {
+    if (!currentUser?.id) return;
+    
     try {
-      // Mock delete - replace with actual API call
-      // await fetch(`${API_BASE}/post/${postId}?user=${encodeURIComponent(currentUser)}`, {
-      //   method: 'DELETE'
-      // });
-
-      setPosts(prev => prev.filter(post => post.id !== postId));
+      const response = await fetch(`${API_BASE}/post/${postId}?user_id=${currentUser.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setPosts(prev => prev.filter(post => post.id !== postId));
+      } else {
+        console.error('Failed to delete post, status:', response.status);
+      }
     } catch (error) {
       console.error('Failed to delete post:', error);
     }
   };
 
+  const handleDeleteReply = async (postId, replyId) => {
+    if (!currentUser?.id) return;
+    
+    try {
+      const response = await fetch(`${API_BASE}/reply/${replyId}?user_id=${currentUser.id}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        setPosts(prev => prev.map(post => {
+          if (post.id === postId) {
+            return {
+              ...post,
+              replies: (post.replies || []).filter(r => r.id !== replyId)
+            };
+          }
+          return post;
+        }));
+      } else {
+        console.error('Failed to delete reply, status:', response.status);
+      }
+    } catch (error) {
+      console.error('Failed to delete reply:', error);
+    }
+  };
+
   const formatTimestamp = (timestamp) => {
+    if (!timestamp) return '';
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
     if (diffInHours < 24 * 7) return `${Math.floor(diffInHours / 24)}d ago`;
@@ -190,15 +254,7 @@ const Playground = () => {
         <div style={styles.loginCard}>
           <h1 style={styles.loginTitle}>Playground</h1>
           <p style={styles.loginSubtitle}>Please log in to access your professional feed</p>
-          <div style={styles.loginMessage}>
-            <p><strong>Authentication Required</strong></p>
-            <p>Please log in through your authentication system.</p>
-            <p style={{ marginTop: '16px', fontSize: '14px', color: '#6b7280' }}>
-              Your login should store either:
-              <br />• JWT token in 'access_token'
-              <br />• User data in 'currentUser'
-            </p>
-          </div>
+          {error && <p style={{color: 'red', marginTop: '10px'}}>{error}</p>}
         </div>
       </div>
     );
@@ -206,17 +262,16 @@ const Playground = () => {
 
   return (
     <div style={styles.container}>
-      {/* Header */}
       <header style={styles.header}>
         <div style={styles.headerContent}>
           <h1 style={styles.headerTitle}>Playground</h1>
           <div style={styles.userInfo}>
-            <span style={styles.welcomeText}>Welcome, {currentUser}</span>
+            <span style={styles.welcomeText}>Welcome, {currentUser.name}</span>
             <button
               onClick={() => {
                 localStorage.removeItem('currentUser');
-                localStorage.removeItem('access_token'); // Clear JWT token too
-                setCurrentUser('');
+                localStorage.removeItem('access_token');
+                setCurrentUser(null);
               }}
               style={styles.logoutButton}
             >
@@ -227,7 +282,19 @@ const Playground = () => {
       </header>
 
       <main style={styles.main}>
-        {/* Create Post */}
+        {error && (
+          <div style={{
+            backgroundColor: '#f8d7da',
+            color: '#721c24',
+            padding: '12px',
+            borderRadius: '4px',
+            marginBottom: '16px',
+            border: '1px solid #f5c6cb'
+          }}>
+            {error}
+          </div>
+        )}
+
         <div style={styles.createPostCard}>
           <form onSubmit={handleCreatePost}>
             <div style={styles.createPostContent}>
@@ -241,6 +308,8 @@ const Playground = () => {
                   placeholder="Share your insights..."
                   style={styles.textarea}
                   rows="3"
+                  disabled={loading}
+                  maxLength="500"
                 />
                 <div style={styles.createPostFooter}>
                   <div style={styles.characterCount}>
@@ -248,14 +317,14 @@ const Playground = () => {
                   </div>
                   <button
                     type="submit"
-                    disabled={!newPost.trim()}
+                    disabled={!newPost.trim() || loading}
                     style={{
                       ...styles.postButton,
-                      ...(newPost.trim() ? {} : styles.postButtonDisabled)
+                      ...((!newPost.trim() || loading) ? styles.postButtonDisabled : {})
                     }}
                   >
                     <Plus size={16} style={styles.buttonIcon} />
-                    Post
+                    {loading ? 'Posting...' : 'Post'}
                   </button>
                 </div>
               </div>
@@ -263,32 +332,30 @@ const Playground = () => {
           </form>
         </div>
 
-        {/* Posts Feed */}
         <div style={styles.feed}>
           {posts.length === 0 ? (
             <div style={styles.emptyState}>
               <MessageCircle size={48} style={styles.emptyIcon} />
               <p style={styles.emptyTitle}>No posts yet</p>
-              <p style={styles.emptySubtitle}>Be the first to share something with your network!</p>
+              <p style={{color: '#666', fontSize: '14px'}}>Be the first to share something!</p>
             </div>
           ) : (
             posts.map((post) => (
               <div key={post.id} style={styles.postCard}>
-                {/* Post Header */}
                 <div style={styles.postHeader}>
                   <div style={styles.postAuthorInfo}>
                     <div style={styles.postAvatar}>
                       <User size={20} />
                     </div>
                     <div style={styles.postAuthorDetails}>
-                      <h3 style={styles.authorName}>{post.author}</h3>
+                      <h3 style={styles.authorName}>{post.user_name}</h3>
                       <div style={styles.postTimestamp}>
                         <Clock size={14} style={styles.timestampIcon} />
                         {formatTimestamp(post.timestamp)}
                       </div>
                     </div>
                   </div>
-                  {post.author === currentUser && (
+                  {post.user_id === currentUser.id && (
                     <button
                       onClick={() => handleDeletePost(post.id)}
                       style={styles.deleteButton}
@@ -298,45 +365,42 @@ const Playground = () => {
                   )}
                 </div>
 
-                {/* Post Content */}
                 <div style={styles.postContent}>
                   <p style={styles.postText}>{post.content}</p>
                 </div>
 
-                {/* Post Actions */}
                 <div style={styles.postActions}>
                   <button
                     onClick={() => handleLike(post.id)}
                     style={{
                       ...styles.actionButton,
-                      color: post.likes.includes(currentUser) ? '#ef4444' : '#6b7280'
+                      color: (post.likes || []).includes(currentUser.name) ? '#ef4444' : '#6b7280'
                     }}
                   >
                     <Heart
                       size={18}
-                      fill={post.likes.includes(currentUser) ? 'currentColor' : 'none'}
+                      fill={(post.likes || []).includes(currentUser.name) ? 'currentColor' : 'none'}
                       style={styles.actionIcon}
                     />
-                    {post.likes.length} likes
+                    {(post.likes || []).length} likes
                   </button>
                   <button style={styles.actionButton}>
                     <MessageCircle size={18} style={styles.actionIcon} />
-                    {post.replies.length} replies
+                    {(post.replies || []).length} replies
                   </button>
                 </div>
 
-                {/* Replies Section */}
-                {post.replies.length > 0 && (
+                {post.replies && post.replies.length > 0 && (
                   <div style={styles.repliesSection}>
-                    {post.replies.map((reply, index) => (
-                      <div key={index} style={styles.replyItem}>
+                    {post.replies.map((reply) => (
+                      <div key={reply.id} style={styles.replyItem}>
                         <div style={styles.replyContent}>
                           <div style={styles.replyAuthorInfo}>
                             <div style={styles.replyAvatar}>
                               <User size={16} />
                             </div>
                             <div style={styles.replyDetails}>
-                              <h4 style={styles.replyAuthorName}>{reply.author}</h4>
+                              <h4 style={styles.replyAuthorName}>{reply.user_name}</h4>
                               <p style={styles.replyText}>{reply.content}</p>
                               <div style={styles.replyTimestamp}>
                                 <Clock size={12} style={styles.replyTimestampIcon} />
@@ -344,19 +408,9 @@ const Playground = () => {
                               </div>
                             </div>
                           </div>
-                          {reply.author === currentUser && (
+                          {reply.user_id === currentUser.id && (
                             <button
-                              onClick={() => {
-                                setPosts(prev => prev.map(p => {
-                                  if (p.id === post.id) {
-                                    return {
-                                      ...p,
-                                      replies: p.replies.filter((_, i) => i !== index)
-                                    };
-                                  }
-                                  return p;
-                                }));
-                              }}
+                              onClick={() => handleDeleteReply(post.id, reply.id)}
                               style={styles.replyDeleteButton}
                             >
                               <Trash2 size={14} />
@@ -368,7 +422,6 @@ const Playground = () => {
                   </div>
                 )}
 
-                {/* Add Reply */}
                 <div style={styles.addReplySection}>
                   <div style={styles.addReplyContent}>
                     <div style={styles.replyInputAvatar}>
@@ -394,7 +447,7 @@ const Playground = () => {
                         disabled={!replyContent[post.id]?.trim()}
                         style={{
                           ...styles.replyButton,
-                          ...(replyContent[post.id]?.trim() ? {} : styles.replyButtonDisabled)
+                          ...(!replyContent[post.id]?.trim() ? styles.replyButtonDisabled : {})
                         }}
                       >
                         <Send size={14} style={styles.buttonIcon} />
@@ -411,7 +464,6 @@ const Playground = () => {
     </div>
   );
 };
-
 // Styles object
 const styles = {
   container: {

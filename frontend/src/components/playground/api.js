@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5173/playground";
+const API_URL = "http://localhost:8000/playground";
 
 export const fetchFeed = async (tab = "recommended", user = null) => {
   const url = user
