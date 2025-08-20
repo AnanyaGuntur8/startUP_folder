@@ -8,7 +8,6 @@ from app.models.startup import Startup
 
 router = APIRouter(tags=["customers"])
 
-# Dependency for DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -16,7 +15,7 @@ def get_db():
     finally:
         db.close()
 
-# Pydantic schemas for Customer
+#customer schemas
 class CustomerCreate(BaseModel):
     name: str
     email: str

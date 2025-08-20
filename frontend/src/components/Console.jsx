@@ -230,354 +230,359 @@ const Console = () => {
 };
 
 const styles = {
-  container: {
-    display: "flex",
-    height: "100vh",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-    backgroundColor: "#121212",
-    color: "#fff"
-  },
-
-  loginContainer: {
-    minHeight: "100vh",
-    backgroundColor: "#121212",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "16px",
-    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-  },
-
-  loginCard: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: "12px",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
-    padding: "48px 32px",
-    width: "100%",
-    maxWidth: "400px",
-    textAlign: "center"
-  },
-
-  loginIcon: {
-    backgroundColor: "#333",
-    borderRadius: "50%",
-    width: "80px",
-    height: "80px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 24px",
-    color: "#fff"
-  },
-
-  loginTitle: {
-    fontSize: "28px",
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: "8px"
-  },
-
-  loginSubtitle: {
-    color: "#aaa",
-    marginBottom: "32px",
-    fontSize: "16px"
-  },
-
-  loginMessage: {
-    backgroundColor: "#2a2a2a",
-    border: "1px solid #444",
-    borderRadius: "8px",
-    padding: "20px",
-    marginBottom: "24px",
-    textAlign: "left"
-  },
-
-  loginHint: {
-    marginTop: "16px",
-    fontSize: "14px",
-    color: "#888"
-  },
-
-  loginButton: {
-    backgroundColor: "#fff",
-    color: "#1e1e1e",
-    border: "none",
-    borderRadius: "8px",
-    padding: "12px 24px",
-    fontSize: "16px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "background-color 0.2s"
-  },
-
-  sidebar: {
-    backgroundColor: "#1e1e1e",
-    boxShadow: "2px 0 6px rgba(0,0,0,0.5)",
-    transition: "width 0.3s ease",
-    display: "flex",
-    flexDirection: "column",
-    position: "relative"
-  },
-
-  sidebarHeader: {
-    display: "flex",
-    alignItems: "center",
-    padding: "16px",
-    borderBottom: "1px solid #333"
-  },
-
-  sidebarTitle: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    margin: 0
-  },
-
-  menuButton: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    color: "#fff",
-    padding: "4px"
-  },
-
-  nav: {
-    marginTop: "16px",
-    flex: 1
-  },
-
-  navItem: {
-    display: "flex",
-    alignItems: "center",
-    padding: "12px 16px",
-    cursor: "pointer",
-    color: "#fff",
-    transition: "background-color 0.2s",
-    borderRadius: "0"
-  },
-
-  navText: {
-    marginLeft: "12px"
-  },
-
-  userSection: {
-    padding: "16px",
-    borderTop: "1px solid #333",
-    marginTop: "auto"
-  },
-
-  userInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px"
-  },
-
-  userAvatar: {
-    backgroundColor: "#333",
-    borderRadius: "50%",
-    width: "32px",
-    height: "32px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#fff"
-  },
-
-  userDetails: {
-    flex: 1
-  },
-
-  userName: {
-    display: "block",
-    fontSize: "14px",
-    fontWeight: "500",
-    color: "#fff",
-    marginBottom: "4px"
-  },
-
-  logoutButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-    background: "none",
-    border: "none",
-    color: "#888",
-    fontSize: "12px",
-    cursor: "pointer",
-    padding: "0"
-  },
-
-  logoutText: {
-    fontSize: "12px"
-  },
-
-  mainContent: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column"
-  },
-
-  header: {
-    backgroundColor: "#1e1e1e",
-    padding: "16px 24px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.5)"
-  },
-
-  headerTitle: {
-    fontSize: "24px",
-    fontWeight: "bold",
-    margin: 0
-  },
-
-  searchContainer: {
-    position: "relative",
-    width: "320px"
-  },
-
-  searchInput: {
-    width: "100%",
-    padding: "10px 10px 10px 36px",
-    borderRadius: "6px",
-    border: "1px solid #555",
-    backgroundColor: "#2a2a2a",
-    color: "#fff",
-    fontSize: "14px",
-    boxSizing: "border-box"
-  },
-
-  searchIcon: {
-    position: "absolute",
-    top: "50%",
-    left: "10px",
-    transform: "translateY(-50%)",
-    color: "#aaa"
-  },
-
-  headerUser: {
-    display: "flex",
-    alignItems: "center"
-  },
-
-  welcomeText: {
-    color: "#aaa",
-    fontSize: "14px"
-  },
-
-  hero: {
-    backgroundColor: "#2a2a2a",
-    color: "#fff",
-    padding: "24px"
-  },
-
-  heroTitle: {
-    fontSize: "22px",
-    fontWeight: "bold",
-    margin: 0
-  },
-
-  heroSubtitle: {
-    marginTop: "6px",
-    fontSize: "14px",
-    opacity: 0.8
-  },
-
-  heroButtons: {
-    marginTop: "16px",
-    display: "flex",
-    gap: "12px"
-  },
-
-  primaryButton: {
-    backgroundColor: "#fff",
-    color: "#1e1e1e",
-    padding: "10px 16px",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    border: "none",
-    cursor: "pointer"
-  },
-
-  secondaryButton: {
-    backgroundColor: "#444",
-    color: "#fff",
-    padding: "10px 16px",
-    borderRadius: "6px",
-    fontWeight: "bold",
-    border: "none",
-    cursor: "pointer"
-  },
-
-  main: {
-    padding: "24px",
-    overflowY: "auto",
-    flex: 1
-  },
-
-  servicesTitle: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    marginBottom: "16px"
-  },
-
-  noServices: {
-    color: "#888"
-  },
-
-  servicesGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-    gap: "20px"
-  },
-
-  serviceCard: {
-    backgroundColor: "#1e1e1e",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.5)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    transition: "transform 0.2s, box-shadow 0.2s",
-    cursor: "pointer"
-  },
-
-  serviceIcon: {
-    width: "48px",
-    height: "48px",
-    backgroundColor: "#333",
-    borderRadius: "50%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "16px",
-    fontSize: "20px",
-    color: "#fff",
-    fontWeight: "bold"
-  },
-
-  serviceName: {
-    fontSize: "18px",
-    fontWeight: "bold",
-    marginBottom: "8px"
-  },
-
-  serviceDescription: {
-    fontSize: "14px",
-    color: "#aaa"
-  },
-
-  serviceButton: {
-    marginTop: "16px",
-    backgroundColor: "#fff",
-    color: "#1e1e1e",
-    padding: "10px",
-    borderRadius: "6px",
-    border: "none",
-    fontWeight: "bold",
-    cursor: "pointer"
-  }
-};
-
+    container: {
+      display: "flex",
+      height: "100vh",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+      backgroundColor: "#f9fafb", // light background
+      color: "#0a1f44" // dark blue text
+    },
+  
+    loginContainer: {
+      minHeight: "100vh",
+      backgroundColor: "#f9fafb",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+    },
+  
+    loginCard: {
+      backgroundColor: "#ffffff",
+      borderRadius: "12px",
+      boxShadow: "0 8px 32px rgba(0,0,128,0.2)",
+      padding: "48px 32px",
+      width: "100%",
+      maxWidth: "400px",
+      textAlign: "center"
+    },
+  
+    loginIcon: {
+      backgroundColor: "#cce0ff",
+      borderRadius: "50%",
+      width: "80px",
+      height: "80px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      margin: "0 auto 24px",
+      color: "#0a1f44"
+    },
+  
+    loginTitle: {
+      fontSize: "28px",
+      fontWeight: "bold",
+      color: "#0a1f44",
+      marginBottom: "8px"
+    },
+  
+    loginSubtitle: {
+      color: "#4a6fa5",
+      marginBottom: "32px",
+      fontSize: "16px"
+    },
+  
+    loginMessage: {
+      backgroundColor: "#e6f0ff",
+      border: "1px solid #b3d1ff",
+      borderRadius: "8px",
+      padding: "20px",
+      marginBottom: "24px",
+      textAlign: "left",
+      color: "#0a1f44"
+    },
+  
+    loginHint: {
+      marginTop: "16px",
+      fontSize: "14px",
+      color: "#4a6fa5"
+    },
+  
+    loginButton: {
+      backgroundColor: "#0a3d91",
+      color: "#fff",
+      border: "none",
+      borderRadius: "8px",
+      padding: "12px 24px",
+      fontSize: "16px",
+      fontWeight: "bold",
+      cursor: "pointer",
+      transition: "background-color 0.2s"
+    },
+  
+    sidebar: {
+      backgroundColor: "#cce0ff",
+      boxShadow: "2px 0 6px rgba(0,0,128,0.2)",
+      transition: "width 0.3s ease",
+      display: "flex",
+      flexDirection: "column",
+      position: "relative"
+    },
+  
+    sidebarHeader: {
+      display: "flex",
+      alignItems: "center",
+      padding: "16px",
+      borderBottom: "1px solid #b3d1ff"
+    },
+  
+    sidebarTitle: {
+      fontSize: "18px",
+      fontWeight: "bold",
+      margin: 0,
+      color: "#0a1f44"
+    },
+  
+    menuButton: {
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      color: "#0a1f44",
+      padding: "4px"
+    },
+  
+    nav: {
+      marginTop: "16px",
+      flex: 1
+    },
+  
+    navItem: {
+      display: "flex",
+      alignItems: "center",
+      padding: "12px 16px",
+      cursor: "pointer",
+      color: "#0a1f44",
+      transition: "background-color 0.2s",
+      borderRadius: "0"
+    },
+  
+    navText: {
+      marginLeft: "12px"
+    },
+  
+    userSection: {
+      padding: "16px",
+      borderTop: "1px solid #b3d1ff",
+      marginTop: "auto"
+    },
+  
+    userInfo: {
+      display: "flex",
+      alignItems: "center",
+      gap: "12px"
+    },
+  
+    userAvatar: {
+      backgroundColor: "#cce0ff",
+      borderRadius: "50%",
+      width: "32px",
+      height: "32px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#0a1f44"
+    },
+  
+    userDetails: {
+      flex: 1
+    },
+  
+    userName: {
+      display: "block",
+      fontSize: "14px",
+      fontWeight: "500",
+      color: "#0a1f44",
+      marginBottom: "4px"
+    },
+  
+    logoutButton: {
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      background: "none",
+      border: "none",
+      color: "#4a6fa5",
+      fontSize: "12px",
+      cursor: "pointer",
+      padding: "0"
+    },
+  
+    logoutText: {
+      fontSize: "12px"
+    },
+  
+    mainContent: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column"
+    },
+  
+    header: {
+      backgroundColor: "#cce0ff",
+      padding: "16px 24px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      boxShadow: "0 2px 4px rgba(0,0,128,0.1)"
+    },
+  
+    headerTitle: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      margin: 0,
+      color: "#0a1f44"
+    },
+  
+    searchContainer: {
+      position: "relative",
+      width: "320px"
+    },
+  
+    searchInput: {
+      width: "100%",
+      padding: "10px 10px 10px 36px",
+      borderRadius: "6px",
+      border: "1px solid #b3d1ff",
+      backgroundColor: "#ffffff",
+      color: "#0a1f44",
+      fontSize: "14px",
+      boxSizing: "border-box"
+    },
+  
+    searchIcon: {
+      position: "absolute",
+      top: "50%",
+      left: "10px",
+      transform: "translateY(-50%)",
+      color: "#4a6fa5"
+    },
+  
+    headerUser: {
+      display: "flex",
+      alignItems: "center"
+    },
+  
+    welcomeText: {
+      color: "#4a6fa5",
+      fontSize: "14px"
+    },
+  
+    hero: {
+      backgroundColor: "#cce0ff",
+      color: "#0a1f44",
+      padding: "24px"
+    },
+  
+    heroTitle: {
+      fontSize: "22px",
+      fontWeight: "bold",
+      margin: 0
+    },
+  
+    heroSubtitle: {
+      marginTop: "6px",
+      fontSize: "14px",
+      opacity: 0.8
+    },
+  
+    heroButtons: {
+      marginTop: "16px",
+      display: "flex",
+      gap: "12px"
+    },
+  
+    primaryButton: {
+      backgroundColor: "#0a3d91",
+      color: "#fff",
+      padding: "10px 16px",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      border: "none",
+      cursor: "pointer"
+    },
+  
+    secondaryButton: {
+      backgroundColor: "#4a6fa5",
+      color: "#fff",
+      padding: "10px 16px",
+      borderRadius: "6px",
+      fontWeight: "bold",
+      border: "none",
+      cursor: "pointer"
+    },
+  
+    main: {
+      padding: "24px",
+      overflowY: "auto",
+      flex: 1
+    },
+  
+    servicesTitle: {
+      fontSize: "18px",
+      fontWeight: "bold",
+      marginBottom: "16px",
+      color: "#0a1f44"
+    },
+  
+    noServices: {
+      color: "#4a6fa5"
+    },
+  
+    servicesGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
+      gap: "20px"
+    },
+  
+    serviceCard: {
+      backgroundColor: "#ffffff",
+      borderRadius: "12px",
+      padding: "20px",
+      boxShadow: "0 4px 12px rgba(0,0,128,0.1)",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "space-between",
+      transition: "transform 0.2s, box-shadow 0.2s",
+      cursor: "pointer"
+    },
+  
+    serviceIcon: {
+      width: "48px",
+      height: "48px",
+      backgroundColor: "#cce0ff",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: "16px",
+      fontSize: "20px",
+      color: "#0a1f44",
+      fontWeight: "bold"
+    },
+  
+    serviceName: {
+      fontSize: "18px",
+      fontWeight: "bold",
+      marginBottom: "8px",
+      color: "#0a1f44"
+    },
+  
+    serviceDescription: {
+      fontSize: "14px",
+      color: "#4a6fa5"
+    },
+  
+    serviceButton: {
+      marginTop: "16px",
+      backgroundColor: "#0a3d91",
+      color: "#fff",
+      padding: "10px",
+      borderRadius: "6px",
+      border: "none",
+      fontWeight: "bold",
+      cursor: "pointer"
+    }
+  };
+  
 export default Console;

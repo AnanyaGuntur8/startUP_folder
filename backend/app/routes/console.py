@@ -12,10 +12,7 @@ class Service(BaseModel):
 
 # Dummy service list for now
 services_db: List[Service] = [
-    {"name": "Playground", "description": "Social network for businesses, posts, and networking", "route": "/playground"},
-    {"name": "StartUp Slide", "description": "Connect with similar businesses and investors", "route": "/startup-slide"},
-    {"name": "Billboard", "description": "Post ads and showcase your business", "route": "/billboard"},
-    {"name": "Library", "description": "Forms, advice, and resources for startups", "route": "/library"},
+    {"name": "Playground", "description": "Social network for businesses, posts, and networking", "route": "/playground"}
 ]
 
 # Endpoint to get all services

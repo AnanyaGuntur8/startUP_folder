@@ -1,4 +1,3 @@
-# app/models/post.py
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -29,7 +28,6 @@ class Reply(Base):
     post = relationship("Post", back_populates="replies")
     likes = relationship("ReplyLike", back_populates="reply", cascade="all, delete-orphan")
 
-# ---- Likes ----
 class PostLike(Base):
     __tablename__ = "post_likes"
 

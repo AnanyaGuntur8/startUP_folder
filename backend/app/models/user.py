@@ -10,6 +10,5 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     hashed_password = Column(String) 
 
-    # Add these so Post and Reply relationships work
     posts = relationship("Post", back_populates="user", cascade="all, delete-orphan")
     replies = relationship("Reply", back_populates="user", cascade="all, delete-orphan")
