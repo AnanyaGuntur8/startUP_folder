@@ -1,6 +1,14 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.core.config import settings
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
+# Define the connection URL directly here
+DATABASE_URL = "postgresql+psycopg2://startup_user:startupdb@localhost:5432/startup_db"
+
+engine = create_engine(
+    DATABASE_URL,
+    echo=True  # Set to False in prod
+)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()

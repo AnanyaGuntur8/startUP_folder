@@ -53,15 +53,13 @@ const Playground = () => {
 
   const loadPosts = async () => {
     try {
-      // In a real implementation, this would call your FastAPI endpoint
-      // const response = await fetch(`${API_BASE}/feed`);
-      // const data = await response.json();
-      // setPosts(data);
-      
-      // For now, start with empty posts array
-      setPosts([]);
+      const response = await fetch(`${API_BASE}/feed`);
+      const data = await response.json();
+      setPosts(data);
     } catch (error) {
       console.error('Failed to load posts:', error);
+      // Fallback to empty array if API call fails
+      setPosts([]);
     }
   };
 
