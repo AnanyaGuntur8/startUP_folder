@@ -27,24 +27,24 @@ class CreateReply(BaseModel):
     user_id: int
     content: str
 
-class PostOut(BaseModel):
-    id: int
-    content: str
-    user_name: str
-    user_id: int
-    timestamp: datetime
-    replies: List[dict] = []
-    likes: List[str] = []
-
-    class Config:
-        orm_mode = True
-
 class ReplyOut(BaseModel):
     id: int
     content: str
     user_name: str
     user_id: int
     timestamp: datetime
+    likes: List[str] = []
+
+    class Config:
+        orm_mode = True
+
+class PostOut(BaseModel):
+    id: int
+    content: str
+    user_name: str
+    user_id: int
+    timestamp: datetime
+    replies: List[ReplyOut] = []
     likes: List[str] = []
 
     class Config:
@@ -99,30 +99,42 @@ def add_reply(post_id: int, reply: CreateReply, db: Session = Depends(get_db)):
         "likes": []
     }
 
-# Get all posts
+# Get all posts (fixed for frontend)
 @router.get("/feed", response_model=List[PostOut])
 def get_feed(db: Session = Depends(get_db)):
-    posts = db.query(Post).all()
+    posts = db.query(Post).order_by(Post.timestamp.desc()).all()
     result = []
+
     for post in posts:
+        post_user_name = post.user.name if post.user else "Unknown"
+        post_user_id = post.user.id if post.user else 0
+        post_likes = [like.user.name for like in (post.likes or []) if like.user]
+
+        post_replies = []
+        for r in (post.replies or []):
+            reply_user_name = r.user.name if r.user else "Unknown"
+            reply_user_id = r.user.id if r.user else 0
+            reply_likes = [like.user.name for like in (r.likes or []) if like.user]
+
+            post_replies.append({
+                "id": r.id,
+                "content": r.content,
+                "user_name": reply_user_name,
+                "user_id": reply_user_id,
+                "timestamp": r.timestamp,
+                "likes": reply_likes
+            })
+
         result.append({
             "id": post.id,
             "content": post.content,
-            "user_name": post.user.name,
-            "user_id": post.user.id,
+            "user_name": post_user_name,
+            "user_id": post_user_id,
             "timestamp": post.timestamp,
-            "likes": [like.user.name for like in post.likes],
-            "replies": [
-                {
-                    "id": r.id,
-                    "content": r.content,
-                    "user_name": r.user.name,
-                    "user_id": r.user.id,
-                    "timestamp": r.timestamp,
-                    "likes": [like.user.name for like in r.likes]
-                } for r in post.replies
-            ]
+            "likes": post_likes,
+            "replies": post_replies
         })
+
     return result
 
 # Like/unlike a post

@@ -33,9 +33,8 @@ class Reply(Base):
 class PostLike(Base):
     __tablename__ = "post_likes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
 
     post = relationship("Post", back_populates="likes")
     user = relationship("User")
@@ -43,9 +42,8 @@ class PostLike(Base):
 class ReplyLike(Base):
     __tablename__ = "reply_likes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    reply_id = Column(Integer, ForeignKey("replies.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    reply_id = Column(Integer, ForeignKey("replies.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
 
     reply = relationship("Reply", back_populates="likes")
     user = relationship("User")
