@@ -35,8 +35,6 @@ export default function Login() {
       <div className="form-pane">
         <div className="form-card">
           <h1 className="brand">
-            <span className="brand-light">Start</span>
-            <span className="brand-bold">UP</span>
           </h1>
           <h2 className="title">Sign in</h2>
           <p className="subtitle">Welcome back. Enter your details below.</p>
@@ -208,11 +206,13 @@ export default function Login() {
         .title {
           margin: 0 0 8px 0;
           font-size: 24px;
+          fontFamily: "'Quicksand', 'Inter', sans-serif",
           font-weight: 600;
           color: #0F172A;
         }
         .subtitle {
           margin: 0 0 28px 0;
+          fontFamily: "'Quicksand', 'Inter', sans-serif",
           color: #475569;
           font-size: 14px;
         }
