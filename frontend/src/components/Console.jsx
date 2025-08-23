@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, Menu, Settings, Grid, User, LogOut } from "lucide-react";
+import { Search, Menu, Settings, Grid, User, LogOut, Star } from "lucide-react";
 
 const Console = () => {
   const [services, setServices] = useState([]);
@@ -7,14 +7,25 @@ const Console = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentUser, setCurrentUser] = useState('');
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
     checkAuthentication();
     setServices([
       {
         name: "Playground",
-        description: "Experiment and test your code in the Playground.",
+        description: "Network with fellow Businesses and have access to investors.",
         route: "/playground",
+      },
+      {
+        name: "Users",
+        description: "Manage users and authentication.",
+        route: "/users",
+      },
+      {
+        name: "Analytics",
+        description: "Track and visualize your data usage.",
+        route: "/analytics",
       },
     ]);
   }, []);
@@ -64,11 +75,19 @@ const Console = () => {
     window.location.href = '/login';
   };
 
+  const toggleFavorite = (serviceName) => {
+    setFavorites((prev) =>
+      prev.includes(serviceName)
+        ? prev.filter((fav) => fav !== serviceName)
+        : [...prev, serviceName]
+    );
+  };
+
   const filteredServices = services.filter((service) =>
     service.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <div style={{ color: '#fff', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+  if (loading) return <div style={{ color: '#2563eb', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
 
   if (!currentUser) {
     return (
@@ -79,15 +98,6 @@ const Console = () => {
           </div>
           <h1 style={styles.loginTitle}>StartUP Console</h1>
           <p style={styles.loginSubtitle}>Please log in to access your console</p>
-          <div style={styles.loginMessage}>
-            <p><strong>Authentication Required</strong></p>
-            <p>Please log in through your authentication system.</p>
-            <p style={styles.loginHint}>
-              Your login should store either:
-              <br />• JWT token in 'access_token'
-              <br />• User data in 'currentUser'
-            </p>
-          </div>
           <button 
             onClick={() => window.location.href = '/login'} 
             style={styles.loginButton}
@@ -128,8 +138,6 @@ const Console = () => {
             {sidebarOpen && <span style={styles.navText}>Settings</span>}
           </div>
         </nav>
-
-        {/* User section at bottom of sidebar */}
         <div style={styles.userSection}>
           <div style={styles.userInfo}>
             <div style={styles.userAvatar}>
@@ -152,7 +160,7 @@ const Console = () => {
       <div style={styles.mainContent}>
         {/* Top Bar */}
         <header style={styles.header}>
-          <h1 style={styles.headerTitle}>StartUP Console</h1>
+          <h1 style={styles.headerTitle}>Console</h1>
           <div style={styles.searchContainer}>
             <input
               type="text"
@@ -168,57 +176,69 @@ const Console = () => {
           </div>
         </header>
 
-        {/* Hero Section */}
-        <div style={styles.hero}>
-          <h2 style={styles.heroTitle}>Welcome to your Console</h2>
-          <p style={styles.heroSubtitle}>
-            Manage your services and infrastructure efficiently.
-          </p>
-          <div style={styles.heroButtons}>
-            <button style={styles.primaryButton}>
-              Create Resource
-            </button>
-            <button style={styles.secondaryButton}>
-              View Dashboard
-            </button>
+        {/* Favorites Section */}
+        {favorites.length > 0 && (
+          <div style={styles.section}>
+            <h2 style={styles.servicesTitle}>Favorites</h2>
+            <div style={styles.servicesGrid}>
+              {services
+                .filter((s) => favorites.includes(s.name))
+                .map((service, index) => (
+                  <div key={index} style={styles.serviceCard}>
+                    <div>
+                      <div style={styles.serviceIcon}>{service.name[0]}</div>
+                      <h3 style={styles.serviceName}>{service.name}</h3>
+                      <p style={styles.serviceDescription}>{service.description}</p>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <button
+                        style={styles.serviceButton}
+                        onClick={() => (window.location.href = service.route)}
+                      >
+                        Open
+                      </button>
+                      <Star
+                        size={18}
+                        onClick={() => toggleFavorite(service.name)}
+                        style={{ cursor: "pointer", color: "#ffd700" }}
+                      />
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Services Grid */}
         <main style={styles.main}>
-          <h2 style={styles.servicesTitle}>
-            Available Services
-          </h2>
+          <h2 style={styles.servicesTitle}>All Services</h2>
           {filteredServices.length === 0 ? (
             <p style={styles.noServices}>No services found.</p>
           ) : (
             <div style={styles.servicesGrid}>
               {filteredServices.map((service, index) => (
-                <div
-                  key={index}
-                  style={styles.serviceCard}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-4px)";
-                    e.currentTarget.style.boxShadow = "0 8px 16px rgba(0,0,0,0.7)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.5)";
-                  }}
-                  onClick={() => window.location.href = service.route}
-                >
+                <div key={index} style={styles.serviceCard}>
                   <div>
-                    <div style={styles.serviceIcon}>
-                      {service.name[0]}
-                    </div>
-                    <h3 style={styles.serviceName}>
-                      {service.name}
-                    </h3>
+                    <div style={styles.serviceIcon}>{service.name[0]}</div>
+                    <h3 style={styles.serviceName}>{service.name}</h3>
                     <p style={styles.serviceDescription}>{service.description}</p>
                   </div>
-                  <button style={styles.serviceButton}>
-                    Open
-                  </button>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <button
+                      style={styles.serviceButton}
+                      onClick={() => (window.location.href = service.route)}
+                    >
+                      Open
+                    </button>
+                    <Star
+                      size={18}
+                      onClick={() => toggleFavorite(service.name)}
+                      style={{
+                        cursor: "pointer",
+                        color: favorites.includes(service.name) ? "#ffd700" : "#ffffff",
+                      }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -234,13 +254,13 @@ const styles = {
       display: "flex",
       height: "100vh",
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-      backgroundColor: "#f9fafb", // light background
-      color: "#0a1f44" // dark blue text
+      backgroundColor: "#ffffff",
+      color: "#2563eb"
     },
   
     loginContainer: {
       minHeight: "100vh",
-      backgroundColor: "#f9fafb",
+      backgroundColor: "#ffffff",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -251,7 +271,7 @@ const styles = {
     loginCard: {
       backgroundColor: "#ffffff",
       borderRadius: "12px",
-      boxShadow: "0 8px 32px rgba(0,0,128,0.2)",
+      boxShadow: "0 8px 32px rgba(37, 99, 235, 0.2)",
       padding: "48px 32px",
       width: "100%",
       maxWidth: "400px",
@@ -259,7 +279,7 @@ const styles = {
     },
   
     loginIcon: {
-      backgroundColor: "#cce0ff",
+      backgroundColor: "#2563eb",
       borderRadius: "50%",
       width: "80px",
       height: "80px",
@@ -267,41 +287,41 @@ const styles = {
       alignItems: "center",
       justifyContent: "center",
       margin: "0 auto 24px",
-      color: "#0a1f44"
+      color: "#ffffff"
     },
   
     loginTitle: {
       fontSize: "28px",
       fontWeight: "bold",
-      color: "#0a1f44",
+      color: "#2563eb",
       marginBottom: "8px"
     },
   
     loginSubtitle: {
-      color: "#4a6fa5",
+      color: "#2563eb",
       marginBottom: "32px",
       fontSize: "16px"
     },
   
     loginMessage: {
-      backgroundColor: "#e6f0ff",
-      border: "1px solid #b3d1ff",
+      backgroundColor: "#f3f4f6",
+      border: "1px solid #dbeafe",
       borderRadius: "8px",
       padding: "20px",
       marginBottom: "24px",
       textAlign: "left",
-      color: "#0a1f44"
+      color: "#2563eb"
     },
   
     loginHint: {
       marginTop: "16px",
       fontSize: "14px",
-      color: "#4a6fa5"
+      color: "#2563eb"
     },
   
     loginButton: {
-      backgroundColor: "#0a3d91",
-      color: "#fff",
+      backgroundColor: "#2563eb",
+      color: "#ffffff",
       border: "none",
       borderRadius: "8px",
       padding: "12px 24px",
@@ -312,8 +332,8 @@ const styles = {
     },
   
     sidebar: {
-      backgroundColor: "#cce0ff",
-      boxShadow: "2px 0 6px rgba(0,0,128,0.2)",
+      backgroundColor: "#ffffff",
+      boxShadow: "2px 0 6px rgba(37, 99, 235, 0.2)",
       transition: "width 0.3s ease",
       display: "flex",
       flexDirection: "column",
@@ -324,21 +344,21 @@ const styles = {
       display: "flex",
       alignItems: "center",
       padding: "16px",
-      borderBottom: "1px solid #b3d1ff"
+      borderBottom: "1px solid #dbeafe"
     },
   
     sidebarTitle: {
       fontSize: "18px",
       fontWeight: "bold",
       margin: 0,
-      color: "#0a1f44"
+      color: "#2563eb"
     },
   
     menuButton: {
       background: "none",
       border: "none",
       cursor: "pointer",
-      color: "#0a1f44",
+      color: "#2563eb",
       padding: "4px"
     },
   
@@ -352,7 +372,7 @@ const styles = {
       alignItems: "center",
       padding: "12px 16px",
       cursor: "pointer",
-      color: "#0a1f44",
+      color: "#2563eb",
       transition: "background-color 0.2s",
       borderRadius: "0"
     },
@@ -363,7 +383,7 @@ const styles = {
   
     userSection: {
       padding: "16px",
-      borderTop: "1px solid #b3d1ff",
+      borderTop: "1px solid #dbeafe",
       marginTop: "auto"
     },
   
@@ -374,14 +394,14 @@ const styles = {
     },
   
     userAvatar: {
-      backgroundColor: "#cce0ff",
+      backgroundColor: "#2563eb",
       borderRadius: "50%",
       width: "32px",
       height: "32px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: "#0a1f44"
+      color: "#ffffff"
     },
   
     userDetails: {
@@ -392,7 +412,7 @@ const styles = {
       display: "block",
       fontSize: "14px",
       fontWeight: "500",
-      color: "#0a1f44",
+      color: "#2563eb",
       marginBottom: "4px"
     },
   
@@ -402,7 +422,7 @@ const styles = {
       gap: "4px",
       background: "none",
       border: "none",
-      color: "#4a6fa5",
+      color: "#2563eb",
       fontSize: "12px",
       cursor: "pointer",
       padding: "0"
@@ -419,19 +439,19 @@ const styles = {
     },
   
     header: {
-      backgroundColor: "#cce0ff",
+      backgroundColor: "#ffffff",
       padding: "16px 24px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 2px 4px rgba(0,0,128,0.1)"
+      boxShadow: "0 2px 4px rgba(37, 99, 235, 0.1)"
     },
   
     headerTitle: {
       fontSize: "24px",
       fontWeight: "bold",
       margin: 0,
-      color: "#0a1f44"
+      color: "#2563eb"
     },
   
     searchContainer: {
@@ -443,9 +463,9 @@ const styles = {
       width: "100%",
       padding: "10px 10px 10px 36px",
       borderRadius: "6px",
-      border: "1px solid #b3d1ff",
+      border: "1px solid #dbeafe",
       backgroundColor: "#ffffff",
-      color: "#0a1f44",
+      color: "#2563eb",
       fontSize: "14px",
       boxSizing: "border-box"
     },
@@ -455,7 +475,7 @@ const styles = {
       top: "50%",
       left: "10px",
       transform: "translateY(-50%)",
-      color: "#4a6fa5"
+      color: "#2563eb"
     },
   
     headerUser: {
@@ -464,13 +484,13 @@ const styles = {
     },
   
     welcomeText: {
-      color: "#4a6fa5",
+      color: "#2563eb",
       fontSize: "14px"
     },
   
     hero: {
-      backgroundColor: "#cce0ff",
-      color: "#0a1f44",
+      backgroundColor: "#ffffff",
+      color: "#2563eb",
       padding: "24px"
     },
   
@@ -493,8 +513,8 @@ const styles = {
     },
   
     primaryButton: {
-      backgroundColor: "#0a3d91",
-      color: "#fff",
+      backgroundColor: "#2563eb",
+      color: "#ffffff",
       padding: "10px 16px",
       borderRadius: "6px",
       fontWeight: "bold",
@@ -503,8 +523,8 @@ const styles = {
     },
   
     secondaryButton: {
-      backgroundColor: "#4a6fa5",
-      color: "#fff",
+      backgroundColor: "#dbeafe",
+      color: "#2563eb",
       padding: "10px 16px",
       borderRadius: "6px",
       fontWeight: "bold",
@@ -522,11 +542,11 @@ const styles = {
       fontSize: "18px",
       fontWeight: "bold",
       marginBottom: "16px",
-      color: "#0a1f44"
+      color: "#2563eb"
     },
   
     noServices: {
-      color: "#4a6fa5"
+      color: "#2563eb"
     },
   
     servicesGrid: {
@@ -536,28 +556,29 @@ const styles = {
     },
   
     serviceCard: {
-      backgroundColor: "#ffffff",
+      backgroundColor: "#2563eb",
       borderRadius: "12px",
       padding: "20px",
-      boxShadow: "0 4px 12px rgba(0,0,128,0.1)",
+      boxShadow: "0 4px 12px rgba(37, 99, 235, 0.3)",
       display: "flex",
       flexDirection: "column",
       justifyContent: "space-between",
       transition: "transform 0.2s, box-shadow 0.2s",
-      cursor: "pointer"
+      cursor: "pointer",
+      color: "#ffffff"
     },
   
     serviceIcon: {
       width: "48px",
       height: "48px",
-      backgroundColor: "#cce0ff",
+      backgroundColor: "#ffffff",
       borderRadius: "50%",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: "16px",
       fontSize: "20px",
-      color: "#0a1f44",
+      color: "#2563eb",
       fontWeight: "bold"
     },
   
@@ -565,18 +586,18 @@ const styles = {
       fontSize: "18px",
       fontWeight: "bold",
       marginBottom: "8px",
-      color: "#0a1f44"
+      color: "#ffffff"
     },
   
     serviceDescription: {
       fontSize: "14px",
-      color: "#4a6fa5"
+      color: "#dbeafe"
     },
   
     serviceButton: {
       marginTop: "16px",
-      backgroundColor: "#0a3d91",
-      color: "#fff",
+      backgroundColor: "#ffffff",
+      color: "#2563eb",
       padding: "10px",
       borderRadius: "6px",
       border: "none",
@@ -584,5 +605,6 @@ const styles = {
       cursor: "pointer"
     }
   };
+  
   
 export default Console;
