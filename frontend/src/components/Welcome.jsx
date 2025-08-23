@@ -17,7 +17,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="1000"
           strokeDashoffset="1000"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 6, ease: "linear" }}
         />
@@ -34,7 +34,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 1 + row * 0.05 + col * 0.05 }}
             />
           ))
@@ -51,7 +51,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="900"
           strokeDashoffset="900"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 6, ease: "linear", delay: 0.5 }}
         />
@@ -68,7 +68,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 1.5 + row * 0.08 }}
             />
           ))
@@ -85,7 +85,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="900"
           strokeDashoffset="900"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 6, ease: "linear", delay: 1 }}
         />
@@ -100,7 +100,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="600"
           strokeDashoffset="600"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 5, ease: "linear", delay: 1.2 }}
         />
@@ -114,7 +114,7 @@ const Welcome = () => {
           stroke="white"
           strokeWidth="1"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 0.3 }}
           transition={{ delay: 2 }}
         />
 
@@ -129,7 +129,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="800"
           strokeDashoffset="800"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 5, ease: "linear", delay: 1.2 }}
         />
@@ -143,7 +143,7 @@ const Welcome = () => {
           stroke="white"
           strokeWidth="1.2"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 0.3 }}
           transition={{ delay: 2.2 }}
         />
         {/* Window rows */}
@@ -158,7 +158,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 2.5 + floor * 0.1 }}
             />
             <motion.rect
@@ -170,7 +170,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 2.5 + floor * 0.1 }}
             />
             <motion.rect
@@ -182,7 +182,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 2.5 + floor * 0.1 }}
             />
           </motion.g>
@@ -199,7 +199,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="900"
           strokeDashoffset="900"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 6, ease: "linear", delay: 1.5 }}
         />
@@ -215,7 +215,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 2.8 + floor * 0.1 }}
             />
             <motion.rect
@@ -227,7 +227,7 @@ const Welcome = () => {
               stroke="white"
               strokeWidth="0.8"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ delay: 2.8 + floor * 0.1 }}
             />
           </motion.g>
@@ -244,7 +244,7 @@ const Welcome = () => {
           strokeWidth="1.5"
           strokeDasharray="850"
           strokeDashoffset="850"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 6, ease: "linear", delay: 1.8 }}
         />
@@ -260,7 +260,7 @@ const Welcome = () => {
             stroke="white"
             strokeWidth="0.8"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
+            animate={{ opacity: 0.3 }}
             transition={{ delay: 3.2 + floor * 0.1 }}
           />
         ))}
@@ -279,7 +279,7 @@ const Welcome = () => {
               strokeWidth="1.5"
               strokeDasharray="100"
               strokeDashoffset="100"
-              initial={{ opacity: 0.5 }}
+              initial={{ opacity: 0.3 }}
               animate={{ strokeDashoffset: 0 }}
               transition={{ duration: 2, delay: 4 + i * 0.3 }}
             />
@@ -293,7 +293,7 @@ const Welcome = () => {
               strokeWidth="1.5"
               strokeDasharray="160"
               strokeDashoffset="160"
-              initial={{ opacity: 0.5 }}
+              initial={{ opacity: 0.3 }}
               animate={{ strokeDashoffset: 0 }}
               transition={{ duration: 3, delay: 4.5 + i * 0.3 }}
             />
@@ -308,7 +308,7 @@ const Welcome = () => {
               strokeDasharray="80"
               strokeDashoffset="80"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ duration: 2, delay: 5 + i * 0.3 }}
             />
             <motion.circle
@@ -321,7 +321,7 @@ const Welcome = () => {
               strokeDasharray="50"
               strokeDashoffset="50"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 0.3 }}
               transition={{ duration: 2, delay: 5.2 + i * 0.3 }}
             />
           </motion.g>
@@ -340,7 +340,7 @@ const Welcome = () => {
               strokeWidth="1"
               strokeDasharray="60"
               strokeDashoffset="60"
-              initial={{ opacity: 0.5 }}
+              initial={{ opacity: 0.3 }}
               animate={{ strokeDashoffset: 0 }}
               transition={{ duration: 1.5, delay: 5.5 + i * 0.2 }}
             />
@@ -353,7 +353,7 @@ const Welcome = () => {
               strokeWidth="1"
               strokeDasharray="95"
               strokeDashoffset="95"
-              initial={{ opacity: 0.5 }}
+              initial={{ opacity: 0.3 }}
               animate={{ strokeDashoffset: 0 }}
               transition={{ duration: 2, delay: 6 + i * 0.2 }}
             />
@@ -370,7 +370,7 @@ const Welcome = () => {
           strokeWidth="2"
           strokeDasharray="1500"
           strokeDashoffset="1500"
-          initial={{ opacity: 0.5 }}
+          initial={{ opacity: 0.3 }}
           animate={{ strokeDashoffset: 0 }}
           transition={{ duration: 8, ease: "linear", delay: 3 }}
         />
@@ -378,7 +378,7 @@ const Welcome = () => {
         {/* Blueprint dimension lines */}
         <motion.g
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={{ opacity: 0.3 }}
           transition={{ delay: 4 }}
         >
         </motion.g>

@@ -1,21 +1,25 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../src/components/Login";
 import Console from "../src/components/Console";
 import Playground from "../src/components/playground/Playground";
-import Welcome from "./components/Welcome";
+import WelcomeWrapper from "./components/WelcomeWrapper";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import AuthChoice from "./components/AuthChoice";
 
 function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("token");
-  // If no token, redirect to login and replace history
-  return token ? children : <Navigate to="/" replace />;
+  const token = localStorage.getItem("access_token");
+  return token ? children : <Navigate to="/auth" replace />;
 }
 
-function App() {
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Welcome />} />
-      {/* <Route path="/" element={<Login />} /> */}
+      <Route path="/" element={<WelcomeWrapper />} />
+      <Route path="/auth" element={<AuthChoice />} /> {/* ✅ NEW */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
       <Route
         path="/console"
         element={
@@ -32,8 +36,9 @@ function App() {
           </ProtectedRoute>
         }
       />
+
+      {/* catch-all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
-
-export default App;
