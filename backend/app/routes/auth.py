@@ -22,6 +22,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     name: str
     password: str
+    user_type: str
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -33,7 +34,12 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
 
     hashed_pw = get_password_hash(user.password)
-    new_user = User(email=user.email, name=user.name, hashed_password=hashed_pw)
+    new_user = User(
+        email=user.email,
+        name=user.name,
+        hashed_password=hashed_pw,
+        user_type=user.user_type  # include the selected type
+    )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -53,13 +59,14 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
         expires_delta=timedelta(minutes=30)
     )
     
-    # Return user data with ID
+    # Return user data with ID and user_type
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
             "id": db_user.id,
             "name": db_user.name,
-            "email": db_user.email
+            "email": db_user.email,
+            "user_type": db_user.user_type  # <-- added this
         }
     }

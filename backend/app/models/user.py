@@ -8,7 +8,8 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     email = Column(String, unique=True, index=True)
-    hashed_password = Column(String) 
+    hashed_password = Column(String)
+    user_type = Column(String)
 
     posts = relationship("Post", back_populates="user", cascade="all, delete-orphan")
     replies = relationship("Reply", back_populates="user", cascade="all, delete-orphan")

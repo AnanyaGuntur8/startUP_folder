@@ -19,7 +19,6 @@ export default function App() {
       <Route path="/auth" element={<AuthChoice />} /> {/* ✅ NEW */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-
       <Route
         path="/console"
         element={
