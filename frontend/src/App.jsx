@@ -6,6 +6,7 @@ import WelcomeWrapper from "./components/WelcomeWrapper";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import AuthChoice from "./components/AuthChoice";
+import StartupForm from "./components/StartUpForm";
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("access_token");
@@ -19,6 +20,14 @@ export default function App() {
       <Route path="/auth" element={<AuthChoice />} /> {/* ✅ NEW */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route
+        path="/startup-form"
+        element={
+          <ProtectedRoute>
+            <StartupForm />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/console"
         element={

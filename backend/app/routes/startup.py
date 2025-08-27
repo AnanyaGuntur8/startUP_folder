@@ -23,6 +23,13 @@ class StartupCreate(BaseModel):
     description: str = None
     country: str
     niche: str = None
+    industry: str = None
+    stage: str = None
+    geography: str = None
+    funding_min: int = None
+    funding_max: int = None
+    owner_id: int 
+
 
 class StartupOut(BaseModel):
     id: int
@@ -32,6 +39,7 @@ class StartupOut(BaseModel):
     description: str = None
     country: str
     niche: str = None
+    owner_id: int
 
     class Config:
         orm_mode = True
@@ -46,12 +54,18 @@ def create_startup(startup: StartupCreate, db: Session = Depends(get_db)):
         description=startup.description,
         country=startup.country,
         niche=startup.niche,
-        owner_id=1  # 🔧 Temporary: set based on actual user in real app
+        industry=startup.industry,
+        stage=startup.stage,
+        geography=startup.geography,
+        funding_min=startup.funding_min,
+        funding_max=startup.funding_max,
+        owner_id=startup.owner_id,
     )
     db.add(new_startup)
     db.commit()
     db.refresh(new_startup)
     return new_startup
+
 
 # Get all startups
 @router.get("/get-startups", response_model=List[StartupOut])

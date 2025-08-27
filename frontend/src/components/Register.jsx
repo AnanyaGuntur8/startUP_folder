@@ -18,20 +18,26 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, user_type: userType }), // <-- fixed field
-      });
-
-      if (!res.ok) throw new Error("Registration failed");
-
-      await res.json();
-      navigate("/login");
-    } catch (err) {
-      alert("Error registering user.");
-    }
-  };
+        const res = await fetch("http://localhost:8000/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, user_type: userType }),
+        });
+  
+        if (!res.ok) throw new Error("Registration failed");
+  
+        const data = await res.json();
+  
+        // Redirect based on user type
+        if (userType === "Business") {
+            navigate("/startup-form", { state: { userId: data.user_id } });
+        } else {
+          navigate("/console"); // or wherever non-business users go
+        }
+      } catch (err) {
+        alert("Error registering user.");
+      }
+    };
 
   return (
     <div className="login-shell">
